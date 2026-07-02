@@ -384,13 +384,12 @@ function numberLines(code) {
 const WATCH_SYSTEM = [
   '你是一个刷题监督助手，负责实时盯着用户写 LeetCode 题目的 C++ 代码。',
   '唯一正确性基准是给出的参考题解。规则：',
-  '1. 只判断用户代码是否沿着参考题解的思路在写；变量名、书写风格不同不算偏离。',
-  '2. 禁止评价时间/空间复杂度是否最优，禁止建议参考题解之外的任何其他解法。',
-  '3. 用户刚开始写、代码太少无法判断时，一律视为在正轨上（on_track=true，issues 为空）。',
-  '4. 发现明显笔误或语法错误（如 for 写成 foe、漏分号）要指出，severity 用 "error"。',
-  '5. 思路偏向题解之外的写法（如题解用哈希表而用户在写双重循环）立刻指出，severity 用 "warning"，提示要引导回题解的板子。',
+  '1. 只判断用户代码是否沿着参考题解的思路在写；变量名不同不算偏离，其他的都算偏离。',
+  '2. 禁止建议参考题解之外的任何其他解法。',
+  '3. 用户在正轨上（on_track=true，issues 为空）。',
+  '4. 思路偏向题解之外的写法立刻指出，severity 用 "warning"；hint 字段直接输出该行应该怎么写的代码，不要写文字说明。',
   '只输出 JSON，不要输出任何其他文字。格式：',
-  '{"on_track": true, "issues": [{"start_line": 1, "end_line": 1, "severity": "warning", "hint": "简短中文提示"}], "summary": "一句话总体评价"}',
+  '{"on_track": true, "issues": [{"start_line": 1, "end_line": 1, "severity": "warning", "hint": "该行代码"}], "summary": "用中文说明应该怎么写"}',
   '行号对应用户代码的行号前缀。没有问题时 issues 给空数组。'
 ].join('\n');
 
@@ -517,7 +516,7 @@ function renderWatchTab() {
   }
   const r = lastWatchResult;
   let html = r.on_track === false
-    ? '<div class="watch-off">⚠ 思路偏了，回到板子上</div>'
+    ? ''
     : '<div class="watch-ok">✔ 在正轨上</div>';
   if (r.summary) { html += '<div class="watch-summary">' + esc(r.summary) + '</div>'; }
   (r.issues || []).forEach(it => {
@@ -648,11 +647,10 @@ function renderProblem() {
 
   // 分层提示：策略 → 数据结构 → 关键洞察 → 完整题解（四级递进，看完整题解会标橙）
   const hb = document.getElementById('hintsBox');
-  let html = '';
+  let html = '<details id="fullSolution" open><summary>完整题解</summary><div class="hint-body"><p>' + esc(prob.solutionText) + '</p><details><summary>代码</summary><pre>' + esc(prob.solutionCode) + '</pre></details></div></details>';
   prob.hints.forEach((h, i) => {
-    html += '<details><summary>提示 ' + (i + 1) + (i === 0 ? '（题型与策略）' : i === 1 ? '（该用什么）' : '（关键洞察）') + '</summary><div class="hint-body">' + h + '</div></details>';
+    html += '<details open><summary>提示 ' + (i + 1) + (i === 0 ? '（题型与策略）' : i === 1 ? '（该用什么）' : '（关键洞察）') + '</summary><div class="hint-body">' + h + '</div></details>';
   });
-  html += '<details id="fullSolution"><summary>完整题解</summary><div class="hint-body"><p>' + esc(prob.solutionText) + '</p><pre>' + esc(prob.solutionCode) + '</pre></div></details>';
   hb.innerHTML = html;
   document.getElementById('fullSolution').addEventListener('toggle', function () {
     if (!this.open) { return; }
@@ -762,9 +760,9 @@ function setupSplit() {
 /* ==================== Monaco 初始化（CDN AMD 零构建 + worker blob 代理） ==================== */
 // 多 CDN 回退：npmmirror（国内实测 ~200ms）为主源，海外源兜底
 const MONACO_BASES = [
-  'https://registry.npmmirror.com/monaco-editor/0.53.0/files/min',
-  'https://cdn.jsdelivr.net/npm/monaco-editor@0.53.0/min',
-  'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.53.0/min'
+  'https://registry.npmmirror.com/monaco-editor/0.52.2/files/min',
+  'https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/min',
+  'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.52.2/min'
 ];
 
 function bootMonaco(baseIdx) {
