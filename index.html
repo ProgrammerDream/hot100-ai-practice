@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hot 100 AI 刷题</title>
+<style>
+  :root {
+    --bg: #1a1a1a; --bg2: #282828; --bg3: #303030; --border: #3c3c3c;
+    --text: #eff1f6; --text2: #a8a8a8; --accent: #ffa116;
+    --green: #2cbb5d; --red: #ef4743; --orange: #ffb800; --blue: #4a9eff;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; overflow: hidden; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif; font-size: 14px; display: flex; flex-direction: column; }
+
+  /* ===== 顶栏 ===== */
+  #topbar { height: 48px; flex: none; display: flex; align-items: center; gap: 8px; padding: 0 12px; background: var(--bg3); border-bottom: 1px solid var(--border); }
+  #topbar .title { font-weight: 600; color: var(--accent); margin-right: 8px; white-space: nowrap; }
+  .btn { background: var(--bg2); color: var(--text); border: 1px solid var(--border); border-radius: 6px; padding: 6px 12px; cursor: pointer; font-size: 13px; white-space: nowrap; }
+  .btn:hover { background: #3a3a3a; }
+  .btn.primary { background: var(--green); border-color: var(--green); color: #fff; font-weight: 600; }
+  .btn.primary:hover { background: #33d06a; }
+  .btn.primary:disabled { opacity: .5; cursor: not-allowed; }
+  #aiStatus { margin-left: auto; font-size: 12px; color: var(--text2); display: flex; align-items: center; gap: 6px; max-width: 40%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #aiStatus .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text2); flex: none; }
+  #aiStatus.ok .dot { background: var(--green); }
+  #aiStatus.busy .dot { background: var(--orange); animation: blink 1s infinite; }
+  #aiStatus.off .dot { background: var(--red); }
+  @keyframes blink { 50% { opacity: .3; } }
+
+  /* ===== 主区：左题面 | 分隔条 | 右编辑器+反馈 ===== */
+  #main { flex: 1; display: flex; min-height: 0; }
+  #leftPane { width: 44%; min-width: 260px; display: flex; flex-direction: column; background: var(--bg2); overflow-y: auto; padding: 16px 20px; }
+  #vSplit { width: 5px; flex: none; cursor: col-resize; background: var(--bg); }
+  #vSplit:hover { background: var(--accent); }
+  #rightPane { flex: 1; display: flex; flex-direction: column; min-width: 300px; }
+  #editorWrap { flex: 1; min-height: 100px; }
+  #hSplit { height: 5px; flex: none; cursor: row-resize; background: var(--bg); }
+  #hSplit:hover { background: var(--accent); }
+  #feedbackPane { height: 220px; flex: none; background: var(--bg2); border-top: 1px solid var(--border); display: flex; flex-direction: column; min-height: 60px; }
+
+  /* ===== 题面 ===== */
+  #probTitle { font-size: 18px; font-weight: 600; margin-bottom: 8px; }
+  #probMeta { margin-bottom: 14px; display: flex; gap: 8px; align-items: center; }
+  .tag { font-size: 12px; padding: 2px 8px; border-radius: 10px; background: var(--bg3); color: var(--text2); }
+  .tag.easy { color: var(--green); } .tag.medium { color: var(--orange); } .tag.hard { color: var(--red); }
+  #probDesc { line-height: 1.7; color: #d4d4d4; }
+  #probDesc pre { background: var(--bg3); padding: 10px 12px; border-radius: 6px; margin: 10px 0; white-space: pre-wrap; font-family: Consolas, monospace; font-size: 13px; }
+  #probDesc code { background: var(--bg3); padding: 1px 5px; border-radius: 4px; font-family: Consolas, monospace; font-size: 13px; }
+  #probDesc p { margin: 8px 0; }
+  #hintsBox { margin-top: 20px; }
+  #hintsBox details { border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; background: var(--bg3); }
+  #hintsBox summary { padding: 10px 14px; cursor: pointer; font-weight: 600; color: var(--blue); user-select: none; }
+  #hintsBox details[open] summary { border-bottom: 1px solid var(--border); }
+  #hintsBox .hint-body { padding: 10px 14px; line-height: 1.7; color: #d4d4d4; }
+  #hintsBox .hint-body pre { background: #1e1e1e; padding: 10px 12px; border-radius: 6px; margin: 8px 0; overflow-x: auto; font-family: Consolas, monospace; font-size: 13px; line-height: 1.5; }
+
+  /* ===== 反馈区 ===== */
+  #fbTabs { display: flex; border-bottom: 1px solid var(--border); flex: none; }
+  #fbTabs .tab { padding: 8px 16px; cursor: pointer; font-size: 13px; color: var(--text2); border-bottom: 2px solid transparent; }
+  #fbTabs .tab.active { color: var(--text); border-bottom-color: var(--accent); }
+  #fbBody { flex: 1; overflow-y: auto; padding: 10px 16px; }
+  .issue { display: flex; gap: 8px; padding: 6px 0; border-bottom: 1px solid #333; line-height: 1.5; cursor: pointer; }
+  .issue:hover { background: #333; }
+  .issue .sev { flex: none; font-weight: 700; }
+  .issue .sev.error { color: var(--red); } .issue .sev.warning { color: var(--orange); }
+  .watch-ok { color: var(--green); padding: 8px 0; }
+  .watch-off { color: var(--red); padding: 8px 0; font-weight: 600; }
+  .watch-summary { color: var(--text2); padding: 4px 0 8px; }
+  .gate { display: flex; gap: 10px; align-items: flex-start; padding: 8px 0; border-bottom: 1px solid #333; line-height: 1.6; }
+  .gate .mark { font-size: 16px; font-weight: 700; flex: none; }
+  .gate.pass .mark { color: var(--green); } .gate.fail .mark { color: var(--red); }
+  #verdictLine { font-size: 20px; font-weight: 700; padding: 10px 0; }
+  #verdictLine.ac { color: var(--green); } #verdictLine.wa { color: var(--red); }
+  .muted { color: var(--text2); padding: 8px 0; }
+
+  /* ===== 题目列表抽屉 ===== */
+  #drawer { position: fixed; top: 0; left: -320px; width: 320px; height: 100%; background: var(--bg3); border-right: 1px solid var(--border); z-index: 100; transition: left .2s; overflow-y: auto; padding: 16px; }
+  #drawer.open { left: 0; }
+  #drawerMask { position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 99; display: none; }
+  #drawerMask.open { display: block; }
+  #drawer h3 { margin-bottom: 12px; color: var(--accent); }
+  .plist-cat { font-size: 12px; color: var(--text2); margin: 12px 0 4px; }
+  .plist-item { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 6px; cursor: pointer; }
+  .plist-item:hover { background: var(--bg2); }
+  .plist-item.cur { background: var(--bg2); outline: 1px solid var(--accent); }
+  .pstat { width: 10px; height: 10px; border-radius: 50%; background: #555; flex: none; }
+  .pstat.solved { background: var(--green); }
+  .pstat.viewed { background: var(--orange); }
+
+  /* ===== 设置弹窗 ===== */
+  #settingsMask { position: fixed; inset: 0; background: rgba(0,0,0,.6); z-index: 200; display: none; align-items: center; justify-content: center; }
+  #settingsMask.open { display: flex; }
+  #settingsBox { width: 560px; max-width: 92vw; max-height: 85vh; overflow-y: auto; background: var(--bg3); border: 1px solid var(--border); border-radius: 10px; padding: 22px; }
+  #settingsBox h3 { color: var(--accent); margin-bottom: 4px; }
+  #settingsBox .note { font-size: 12px; color: var(--text2); margin-bottom: 14px; line-height: 1.6; }
+  .cfg-group { border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; margin-bottom: 12px; }
+  .cfg-group h4 { font-size: 13px; margin-bottom: 10px; }
+  .cfg-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .cfg-row label { width: 70px; flex: none; font-size: 12px; color: var(--text2); }
+  .cfg-row input { flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: 5px; color: var(--text); padding: 6px 8px; font-size: 13px; font-family: Consolas, monospace; }
+  #settingsBox .actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 8px; }
+
+  /* ===== 撒花 ===== */
+  #confetti { position: fixed; inset: 0; pointer-events: none; z-index: 300; }
+</style>
+</head>
+<body>
+
+<div id="topbar">
+  <button class="btn" id="btnList">☰ 题目列表</button>
+  <span class="title">Hot 100 AI 刷题</span>
+  <button class="btn" id="btnPrev" title="上一题">←</button>
+  <button class="btn" id="btnNext" title="下一题">→</button>
+  <button class="btn" id="btnRandom">🎲 随机</button>
+  <span id="aiStatus"><span class="dot"></span><span id="aiStatusText">未配置 Key</span></span>
+  <button class="btn primary" id="btnSubmit">提交</button>
+  <button class="btn" id="btnSettings">⚙ 设置</button>
+</div>
+
+<div id="main">
+  <div id="leftPane">
+    <div id="probTitle"></div>
+    <div id="probMeta"></div>
+    <div id="probDesc"></div>
+    <div id="hintsBox"></div>
+  </div>
+  <div id="vSplit"></div>
+  <div id="rightPane">
+    <div id="editorWrap"></div>
+    <div id="hSplit"></div>
+    <div id="feedbackPane">
+      <div id="fbTabs">
+        <div class="tab active" data-tab="watch">实时监督</div>
+        <div class="tab" data-tab="submit">提交结果</div>
+      </div>
+      <div id="fbBody"></div>
+    </div>
+  </div>
+</div>
+
+<div id="drawerMask"></div>
+<div id="drawer"><h3>题目列表</h3><div id="plist"></div></div>
+
+<div id="settingsMask">
+  <div id="settingsBox">
+    <h3>模型设置</h3>
+    <div class="note">Key 只保存在本机浏览器 localStorage，不会写进任何文件。三家国内供应商（百炼 / DeepSeek / 硅基流动）均支持浏览器直调；任何 OpenAI 兼容接口都能填。</div>
+    <div class="cfg-group">
+      <h4>快模型（实时盯写，推荐百炼 qwen-flash）</h4>
+      <div class="cfg-row"><label>baseURL</label><input id="fastBase"></div>
+      <div class="cfg-row"><label>model</label><input id="fastModel"></div>
+      <div class="cfg-row"><label>API Key</label><input id="fastKey" type="password" placeholder="sk-..."></div>
+    </div>
+    <div class="cfg-group">
+      <h4>强模型（提交终判，推荐 DeepSeek）</h4>
+      <div class="cfg-row"><label>baseURL</label><input id="strongBase"></div>
+      <div class="cfg-row"><label>model</label><input id="strongModel"></div>
+      <div class="cfg-row"><label>API Key</label><input id="strongKey" type="password" placeholder="sk-..."></div>
+    </div>
+    <div class="actions">
+      <button class="btn" id="btnCfgCancel">取消</button>
+      <button class="btn primary" id="btnCfgSave">保存</button>
+    </div>
+  </div>
+</div>
+
+<canvas id="confetti"></canvas>
+
+<script>
+'use strict';
+
+/* ==================== 题库（M1 内嵌 3 道样例，M2 换构建脚本产物） ==================== */
+const PROBLEMS = [
+  {
+    id: 1, title: '1. 两数之和', category: '哈希', difficulty: 'easy', diffText: '简单',
+    descHtml: `
+      <p>给定一个整数数组 <code>nums</code> 和一个整数目标值 <code>target</code>，请你在该数组中找出<strong>和为目标值</strong>的那两个整数，并返回它们的数组下标。</p>
+      <p>你可以假设每种输入只会对应一个答案，并且你不能使用两次相同的元素。</p>
+      <pre>输入：nums = [2,7,11,15], target = 9
+输出：[0,1]
+解释：nums[0] + nums[1] == 9，返回 [0, 1]</pre>
+      <pre>输入：nums = [3,3], target = 6
+输出：[0,1]</pre>`,
+    hints: [
+      '题型是「查找配对」：一次遍历，边走边记住已经见过的数，问自己"我需要的另一半出现过吗"。',
+      '用 unordered_map&lt;int,int&gt; 存「值 → 下标」，查询是 O(1)。',
+      '遍历到 nums[i] 时，<strong>先</strong>查 target - nums[i] 是否已在表里：在就直接返回两个下标；不在再把 nums[i] 存进表。先查后存，天然避免用到自己。'
+    ],
+    solutionCode: `class Solution {
+public:
+    vector<int> twoSum(vector<int>& nums, int target) {
+        unordered_map<int, int> idx; // 值 -> 下标
+        for (int i = 0; i < nums.size(); i++) {
+            auto it = idx.find(target - nums[i]);
+            if (it != idx.end()) {
+                return {it->second, i};
+            }
+            idx[nums[i]] = i;
+        }
+        return {};
+    }
+};`,
+    solutionText: '一次遍历 + 哈希表。遍历到每个数时先在表中查「target 减去它」是否出现过：出现过则答案就是表中记的下标和当前下标；没出现则把当前数和下标存入表。先查后存保证不会把同一个元素用两次，也天然处理了 [3,3] 这种重复值用例。',
+    starterCode: `#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+public:
+    vector<int> twoSum(vector<int>& nums, int target) {
+
+    }
+};`
+  },
+  {
+    id: 283, title: '283. 移动零', category: '双指针', difficulty: 'easy', diffText: '简单',
+    descHtml: `
+      <p>给定一个数组 <code>nums</code>，编写一个函数将所有 <code>0</code> 移动到数组的末尾，同时保持非零元素的相对顺序。</p>
+      <p><strong>请注意</strong>，必须在不复制数组的情况下原地对数组进行操作。</p>
+      <pre>输入: nums = [0,1,0,3,12]
+输出: [1,3,12,0,0]</pre>
+      <pre>输入: nums = [0]
+输出: [0]</pre>`,
+    hints: [
+      '题型是「原地重排」：双指针，一个指针负责扫描，一个指针负责标记"下一个非零数该放的位置"。',
+      '慢指针 slow 指向下一个非零元素应放的下标；快指针 fast 正常遍历整个数组。',
+      'fast 遇到非零元素时，swap(nums[slow], nums[fast]) 然后 slow++。交换而不是赋值，一趟走完零自动全在末尾，不需要第二趟补零。'
+    ],
+    solutionCode: `class Solution {
+public:
+    void moveZeroes(vector<int>& nums) {
+        int slow = 0; // 下一个非零元素应放的位置
+        for (int fast = 0; fast < nums.size(); fast++) {
+            if (nums[fast] != 0) {
+                swap(nums[slow], nums[fast]);
+                slow++;
+            }
+        }
+    }
+};`,
+    solutionText: '双指针一趟扫描。slow 始终指向"下一个非零数应该放的位置"，fast 向前扫，每遇到非零数就和 slow 位置交换并让 slow 前进。扫描结束时所有非零数按原相对顺序排在前面，零自动被换到末尾。全零、单元素数组同样正确。',
+    starterCode: `#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+public:
+    void moveZeroes(vector<int>& nums) {
+
+    }
+};`
+  },
+  {
+    id: 3, title: '3. 无重复字符的最长子串', category: '滑动窗口', difficulty: 'medium', diffText: '中等',
+    descHtml: `
+      <p>给定一个字符串 <code>s</code>，请你找出其中不含有重复字符的<strong>最长子串</strong>的长度。</p>
+      <pre>输入: s = "abcabcbb"
+输出: 3
+解释: 因为无重复字符的最长子串是 "abc"，所以其长度为 3。</pre>
+      <pre>输入: s = "bbbbb"
+输出: 1</pre>
+      <pre>输入: s = ""
+输出: 0</pre>`,
+    hints: [
+      '题型是「滑动窗口」：维护一个不含重复字符的窗口 [left, right]，右端一直扩，出现重复才收缩左端。',
+      '用 unordered_set&lt;char&gt; 存窗口内的字符，判断"新字符是否重复"是 O(1)。',
+      '右端字符 s[right] 已在集合里时，循环把 s[left] 移出集合并 left++，直到不重复；然后插入 s[right]，用 right - left + 1 更新答案。'
+    ],
+    solutionCode: `class Solution {
+public:
+    int lengthOfLongestSubstring(string s) {
+        unordered_set<char> window;
+        int ans = 0, left = 0;
+        for (int right = 0; right < s.size(); right++) {
+            // 右端字符重复时收缩左端，直到窗口内无重复
+            while (window.count(s[right])) {
+                window.erase(s[left]);
+                left++;
+            }
+            window.insert(s[right]);
+            ans = max(ans, right - left + 1);
+        }
+        return ans;
+    }
+};`,
+    solutionText: '滑动窗口 + 哈希集合。右指针逐字符扩张，若新字符已在窗口内，就不断从左侧移出字符直到无重复，再把新字符加入窗口并更新最大长度。空串时循环不执行直接返回 0。',
+    starterCode: `#include <bits/stdc++.h>
+using namespace std;
+
+class Solution {
+public:
+    int lengthOfLongestSubstring(string s) {
+
+    }
+};`
+  }
+];
+
+/* ==================== 存储与状态 ==================== */
+const LS = {
+  settings: 'hot100.settings',
+  progress: 'hot100.progress',
+  code: id => 'hot100.code.' + id,
+  curProb: 'hot100.curProb'
+};
+
+const DEFAULT_SETTINGS = {
+  fast:   { baseURL: 'https://dashscope.aliyuncs.com/compatible-mode/v1', model: 'qwen-flash', key: '' },
+  strong: { baseURL: 'https://api.deepseek.com', model: 'deepseek-v4-flash', key: '' }
+};
+
+function loadSettings() {
+  const raw = localStorage.getItem(LS.settings);
+  if (!raw) {
+    return JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
+  }
+  try {
+    const s = JSON.parse(raw);
+    return { fast: Object.assign({}, DEFAULT_SETTINGS.fast, s.fast), strong: Object.assign({}, DEFAULT_SETTINGS.strong, s.strong) };
+  } catch (e) {
+    return JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
+  }
+}
+
+function loadProgress() {
+  try { return JSON.parse(localStorage.getItem(LS.progress) || '{}'); } catch (e) { return {}; }
+}
+function saveProgress(p) { localStorage.setItem(LS.progress, JSON.stringify(p)); }
+
+let settings = loadSettings();
+let progress = loadProgress();
+let curIdx = Math.max(0, PROBLEMS.findIndex(p => String(p.id) === localStorage.getItem(LS.curProb)));
+let editor = null;
+// 程序性 setValue（切题/恢复代码）不算用户输入，不触发监督也不落存储
+let suppressWatch = false;
+
+/* ==================== LLM 调用（OpenAI 兼容，统一入口） ==================== */
+async function callLLM(cfg, messages, opts) {
+  opts = opts || {};
+  const body = { model: cfg.model, messages: messages, temperature: 0, stream: false };
+  if (opts.json) {
+    body.response_format = { type: 'json_object' };
+  }
+  let resp = await fetch(cfg.baseURL.replace(/\/$/, '') + '/chat/completions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + cfg.key },
+    body: JSON.stringify(body),
+    signal: opts.signal
+  });
+  // 部分自定义兼容接口不认 response_format，400 时去掉重试一次
+  if (!resp.ok && resp.status === 400 && opts.json) {
+    delete body.response_format;
+    resp = await fetch(cfg.baseURL.replace(/\/$/, '') + '/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + cfg.key },
+      body: JSON.stringify(body),
+      signal: opts.signal
+    });
+  }
+  if (!resp.ok) {
+    const text = await resp.text().catch(() => '');
+    throw new Error('HTTP ' + resp.status + ' ' + text.slice(0, 200));
+  }
+  const data = await resp.json();
+  return (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || '';
+}
+
+// 模型不守 JSON 约定时的兜底解析：剥代码围栏、截取首尾大括号
+function extractJson(text) {
+  if (!text) { return null; }
+  let t = text.trim().replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/, '');
+  try { return JSON.parse(t); } catch (e) { /* 继续兜底 */ }
+  const start = t.indexOf('{'), end = t.lastIndexOf('}');
+  if (start < 0 || end <= start) { return null; }
+  try { return JSON.parse(t.slice(start, end + 1)); } catch (e) { return null; }
+}
+
+// 给代码加行号前缀，便于模型精确定位（抄 PR-Agent 的做法）
+function numberLines(code) {
+  return code.split('\n').map((l, i) => (i + 1) + '| ' + l).join('\n');
+}
+
+/* ==================== 提示词（唯一基准=题解，禁判复杂度） ==================== */
+const WATCH_SYSTEM = [
+  '你是一个刷题监督助手，负责实时盯着用户写 LeetCode 题目的 C++ 代码。',
+  '唯一正确性基准是给出的参考题解。规则：',
+  '1. 只判断用户代码是否沿着参考题解的思路在写；变量名、书写风格不同不算偏离。',
+  '2. 禁止评价时间/空间复杂度是否最优，禁止建议参考题解之外的任何其他解法。',
+  '3. 用户刚开始写、代码太少无法判断时，一律视为在正轨上（on_track=true，issues 为空）。',
+  '4. 发现明显笔误或语法错误（如 for 写成 foe、漏分号）要指出，severity 用 "error"。',
+  '5. 思路偏向题解之外的写法（如题解用哈希表而用户在写双重循环）立刻指出，severity 用 "warning"，提示要引导回题解的板子。',
+  '只输出 JSON，不要输出任何其他文字。格式：',
+  '{"on_track": true, "issues": [{"start_line": 1, "end_line": 1, "severity": "warning", "hint": "简短中文提示"}], "summary": "一句话总体评价"}',
+  '行号对应用户代码的行号前缀。没有问题时 issues 给空数组。'
+].join('\n');
+
+const JUDGE_SYSTEM = [
+  '你是判题官。唯一正确性基准是给出的参考题解，按固定两关判定用户提交的 C++ 代码：',
+  '关1 思路(idea)：算法骨架与参考题解一致；变量名、书写风格差异不算偏离。',
+  '关2 边界(boundary)：参考题解能正确处理的边界情况（空输入、单元素、重复元素、全相同元素等），用户代码同样处理正确。',
+  '禁止评价时间/空间复杂度是否最优，禁止以参考题解之外的解法作为评判标准。',
+  '只输出 JSON，不要输出任何其他文字。格式：',
+  '{"idea": {"pass": true, "reason": "一句话理由"}, "boundary": {"pass": true, "reason": "一句话理由"}, "comment": "一两句总评，若未通过给出回到题解思路的修改方向"}'
+].join('\n');
+
+function buildUserContext(prob, code) {
+  return [
+    '【题目】' + prob.title,
+    prob.descHtml.replace(/<[^>]+>/g, '').trim(),
+    '',
+    '【参考题解思路】' + prob.solutionText,
+    '【参考题解代码】',
+    prob.solutionCode,
+    '',
+    '【用户当前代码（带行号）】',
+    numberLines(code)
+  ].join('\n');
+}
+
+/* ==================== 实时监督（800ms 防抖 + 回车整行触发） ==================== */
+let watchTimer = null;
+let watchAbort = null;
+let lastCheckedCode = null;
+let lastWatchResult = null;
+
+function setAiStatus(cls, text) {
+  const el = document.getElementById('aiStatus');
+  el.className = cls;
+  document.getElementById('aiStatusText').textContent = text;
+}
+
+function scheduleWatch(immediate) {
+  clearTimeout(watchTimer);
+  watchTimer = setTimeout(runWatch, immediate ? 150 : 800);
+}
+
+async function runWatch() {
+  if (!settings.fast.key) {
+    setAiStatus('off', '未配置快模型 Key（点右上角设置）');
+    return;
+  }
+  const prob = PROBLEMS[curIdx];
+  const code = editor.getValue();
+  if (code === lastCheckedCode) {
+    return;
+  }
+  // 取消上一个未完成请求（抄 Continue.dev 的请求生命周期管理）
+  if (watchAbort) { watchAbort.abort(); }
+  watchAbort = new AbortController();
+  setAiStatus('busy', 'AI 检查中…');
+  try {
+    const raw = await callLLM(settings.fast, [
+      { role: 'system', content: WATCH_SYSTEM },
+      { role: 'user', content: buildUserContext(prob, code) }
+    ], { json: true, signal: watchAbort.signal });
+    const result = extractJson(raw);
+    if (!result) {
+      setAiStatus('off', 'AI 返回无法解析');
+      return;
+    }
+    lastCheckedCode = code;
+    lastWatchResult = result;
+    renderMarkers(result.issues || []);
+    renderWatchTab();
+    if (result.on_track === false) {
+      setAiStatus('off', '思路偏了，看下方提示');
+      switchTab('watch');
+      return;
+    }
+    setAiStatus('ok', (result.issues || []).length ? '在正轨上，有小问题' : '在正轨上');
+  } catch (e) {
+    if (e.name === 'AbortError') { return; }
+    setAiStatus('off', '调用失败: ' + e.message.slice(0, 80));
+  }
+}
+
+function renderMarkers(issues) {
+  const model = editor.getModel();
+  // 行号做双向钳制，防模型幻觉出超范围行号
+  const maxLine = model.getLineCount();
+  const markers = issues.map(it => {
+    const start = Math.min(maxLine, Math.max(1, it.start_line || 1));
+    const end = Math.min(maxLine, Math.max(start, it.end_line || start));
+    return {
+      severity: it.severity === 'error' ? monaco.MarkerSeverity.Error : monaco.MarkerSeverity.Warning,
+      message: it.hint || '',
+      startLineNumber: start, startColumn: 1,
+      endLineNumber: end, endColumn: 1000
+    };
+  });
+  monaco.editor.setModelMarkers(model, 'ai-lint', markers);
+}
+
+/* ==================== 反馈区渲染 ==================== */
+let curTab = 'watch';
+let lastSubmitHtml = '<div class="muted">还没有提交。写完点右上角「提交」。</div>';
+
+function switchTab(tab) {
+  curTab = tab;
+  document.querySelectorAll('#fbTabs .tab').forEach(t => t.classList.toggle('active', t.dataset.tab === tab));
+  if (tab === 'watch') { renderWatchTab(); return; }
+  document.getElementById('fbBody').innerHTML = lastSubmitHtml;
+  // 重新渲染后必须重绑，否则切走再切回按钮失效
+  bindRejudge();
+}
+
+function esc(s) {
+  return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function renderWatchTab() {
+  if (curTab !== 'watch') { return; }
+  const body = document.getElementById('fbBody');
+  if (!lastWatchResult) {
+    body.innerHTML = '<div class="muted">开始写代码后，AI 会在你停顿或换行时自动检查思路是否沿着题解走。</div>';
+    return;
+  }
+  const r = lastWatchResult;
+  let html = r.on_track === false
+    ? '<div class="watch-off">⚠ 思路偏了，回到板子上</div>'
+    : '<div class="watch-ok">✔ 在正轨上</div>';
+  if (r.summary) { html += '<div class="watch-summary">' + esc(r.summary) + '</div>'; }
+  (r.issues || []).forEach(it => {
+    html += '<div class="issue" data-line="' + (it.start_line || 1) + '">'
+      + '<span class="sev ' + (it.severity === 'error' ? 'error' : 'warning') + '">' + (it.severity === 'error' ? '✘' : '⚠') + '</span>'
+      + '<span>第 ' + esc(it.start_line) + ' 行：' + esc(it.hint) + '</span></div>';
+  });
+  body.innerHTML = html;
+  // 点问题条目跳转到对应行
+  body.querySelectorAll('.issue').forEach(el => {
+    el.addEventListener('click', () => {
+      const line = parseInt(el.dataset.line, 10) || 1;
+      editor.revealLineInCenter(line);
+      editor.setPosition({ lineNumber: line, column: 1 });
+      editor.focus();
+    });
+  });
+}
+
+/* ==================== 提交两关判定 ==================== */
+async function submitCode(isRejudge) {
+  if (!settings.strong.key) {
+    switchTab('submit');
+    lastSubmitHtml = '<div class="watch-off">未配置强模型 Key，点右上角「设置」。</div>';
+    document.getElementById('fbBody').innerHTML = lastSubmitHtml;
+    return;
+  }
+  const prob = PROBLEMS[curIdx];
+  const btn = document.getElementById('btnSubmit');
+  btn.disabled = true;
+  switchTab('submit');
+  lastSubmitHtml = '<div class="muted">强模型判定中…（思路 / 边界 两关）</div>';
+  document.getElementById('fbBody').innerHTML = lastSubmitHtml;
+  try {
+    const raw = await callLLM(settings.strong, [
+      { role: 'system', content: JUDGE_SYSTEM },
+      { role: 'user', content: buildUserContext(prob, editor.getValue()) }
+    ], { json: true });
+    const r = extractJson(raw);
+    if (!r || !r.idea || !r.boundary) {
+      lastSubmitHtml = '<div class="watch-off">判定结果无法解析，点击重判。</div>' + rejudgeBtnHtml();
+      document.getElementById('fbBody').innerHTML = lastSubmitHtml;
+      bindRejudge();
+      return;
+    }
+    const accepted = !!r.idea.pass && !!r.boundary.pass;
+    let html = '<div id="verdictLine" class="' + (accepted ? 'ac' : 'wa') + '">' + (accepted ? '✔ Accepted' : '✘ 未通过') + '</div>';
+    html += gateHtml('关1 思路与题解一致', r.idea);
+    html += gateHtml('关2 边界条件覆盖', r.boundary);
+    if (r.comment) { html += '<div class="watch-summary">' + esc(r.comment) + '</div>'; }
+    if (!accepted) { html += rejudgeBtnHtml(); }
+    lastSubmitHtml = html;
+    document.getElementById('fbBody').innerHTML = lastSubmitHtml;
+    bindRejudge();
+    if (accepted) {
+      progress[prob.id] = 'solved';
+      saveProgress(progress);
+      renderProblemList();
+      fireConfetti();
+    }
+  } catch (e) {
+    lastSubmitHtml = '<div class="watch-off">调用失败: ' + esc(e.message.slice(0, 200)) + '</div>' + rejudgeBtnHtml();
+    document.getElementById('fbBody').innerHTML = lastSubmitHtml;
+    bindRejudge();
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+function gateHtml(name, gate) {
+  const pass = !!gate.pass;
+  return '<div class="gate ' + (pass ? 'pass' : 'fail') + '">'
+    + '<span class="mark">' + (pass ? '✔' : '✘') + '</span>'
+    + '<span><strong>' + esc(name) + '</strong><br>' + esc(gate.reason || '') + '</span></div>';
+}
+
+function rejudgeBtnHtml() {
+  return '<div style="padding-top:10px"><button class="btn" id="btnRejudge">我不服，重判</button></div>';
+}
+function bindRejudge() {
+  const b = document.getElementById('btnRejudge');
+  if (b) { b.addEventListener('click', () => submitCode(true)); }
+}
+
+/* ==================== 撒花（自绘 canvas，零依赖） ==================== */
+function fireConfetti() {
+  const canvas = document.getElementById('confetti');
+  const ctx = canvas.getContext('2d');
+  canvas.width = innerWidth; canvas.height = innerHeight;
+  const colors = ['#2cbb5d', '#ffa116', '#4a9eff', '#ef4743', '#f5d90a', '#b57edc'];
+  const parts = [];
+  for (let i = 0; i < 160; i++) {
+    parts.push({
+      x: canvas.width / 2, y: canvas.height / 3,
+      vx: (Math.random() - .5) * 16, vy: Math.random() * -14 - 3,
+      size: Math.random() * 7 + 4, color: colors[i % colors.length],
+      rot: Math.random() * Math.PI, vr: (Math.random() - .5) * .3, life: 130
+    });
+  }
+  function tick() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    let alive = 0;
+    parts.forEach(p => {
+      if (p.life <= 0) { return; }
+      alive++;
+      p.vy += 0.35; p.x += p.vx; p.y += p.vy; p.rot += p.vr; p.life--;
+      ctx.save();
+      ctx.translate(p.x, p.y); ctx.rotate(p.rot);
+      ctx.fillStyle = p.color;
+      ctx.globalAlpha = Math.min(1, p.life / 40);
+      ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * .6);
+      ctx.restore();
+    });
+    if (alive > 0) { requestAnimationFrame(tick); return; }
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
+  tick();
+}
+
+/* ==================== 题面与题目列表渲染 ==================== */
+function renderProblem() {
+  const prob = PROBLEMS[curIdx];
+  localStorage.setItem(LS.curProb, String(prob.id));
+  document.getElementById('probTitle').textContent = prob.title;
+  document.getElementById('probMeta').innerHTML =
+    '<span class="tag ' + prob.difficulty + '">' + prob.diffText + '</span><span class="tag">' + esc(prob.category) + '</span>';
+  document.getElementById('probDesc').innerHTML = prob.descHtml;
+
+  // 分层提示：策略 → 数据结构 → 关键洞察 → 完整题解（四级递进，看完整题解会标橙）
+  const hb = document.getElementById('hintsBox');
+  let html = '';
+  prob.hints.forEach((h, i) => {
+    html += '<details><summary>提示 ' + (i + 1) + (i === 0 ? '（题型与策略）' : i === 1 ? '（该用什么）' : '（关键洞察）') + '</summary><div class="hint-body">' + h + '</div></details>';
+  });
+  html += '<details id="fullSolution"><summary>完整题解</summary><div class="hint-body"><p>' + esc(prob.solutionText) + '</p><pre>' + esc(prob.solutionCode) + '</pre></div></details>';
+  hb.innerHTML = html;
+  document.getElementById('fullSolution').addEventListener('toggle', function () {
+    if (!this.open) { return; }
+    if (progress[prob.id] === 'solved') { return; }
+    progress[prob.id] = 'viewed';
+    saveProgress(progress);
+    renderProblemList();
+  });
+
+  // 恢复该题已写代码，没有则用起始模板
+  if (editor) {
+    suppressWatch = true;
+    const saved = localStorage.getItem(LS.code(prob.id));
+    editor.setValue(saved != null ? saved : prob.starterCode);
+    suppressWatch = false;
+    monaco.editor.setModelMarkers(editor.getModel(), 'ai-lint', []);
+    clearTimeout(watchTimer);
+  }
+  lastCheckedCode = null;
+  lastWatchResult = null;
+  lastSubmitHtml = '<div class="muted">还没有提交。写完点右上角「提交」。</div>';
+  switchTab(curTab);
+  renderProblemList();
+}
+
+function renderProblemList() {
+  const box = document.getElementById('plist');
+  const cats = [];
+  PROBLEMS.forEach(p => { if (!cats.includes(p.category)) { cats.push(p.category); } });
+  let html = '';
+  cats.forEach(cat => {
+    html += '<div class="plist-cat">' + esc(cat) + '</div>';
+    PROBLEMS.forEach((p, i) => {
+      if (p.category !== cat) { return; }
+      const st = progress[p.id] || '';
+      html += '<div class="plist-item' + (i === curIdx ? ' cur' : '') + '" data-idx="' + i + '">'
+        + '<span class="pstat ' + st + '"></span><span>' + esc(p.title) + '</span>'
+        + '<span class="tag ' + p.difficulty + '" style="margin-left:auto">' + p.diffText + '</span></div>';
+    });
+  });
+  box.innerHTML = html;
+  box.querySelectorAll('.plist-item').forEach(el => {
+    el.addEventListener('click', () => {
+      curIdx = parseInt(el.dataset.idx, 10);
+      renderProblem();
+      toggleDrawer(false);
+    });
+  });
+}
+
+function gotoProblem(delta) {
+  curIdx = (curIdx + delta + PROBLEMS.length) % PROBLEMS.length;
+  renderProblem();
+}
+
+function toggleDrawer(open) {
+  document.getElementById('drawer').classList.toggle('open', open);
+  document.getElementById('drawerMask').classList.toggle('open', open);
+}
+
+/* ==================== 设置弹窗 ==================== */
+function openSettings() {
+  document.getElementById('fastBase').value = settings.fast.baseURL;
+  document.getElementById('fastModel').value = settings.fast.model;
+  document.getElementById('fastKey').value = settings.fast.key;
+  document.getElementById('strongBase').value = settings.strong.baseURL;
+  document.getElementById('strongModel').value = settings.strong.model;
+  document.getElementById('strongKey').value = settings.strong.key;
+  document.getElementById('settingsMask').classList.add('open');
+}
+
+function saveSettings() {
+  settings.fast = { baseURL: document.getElementById('fastBase').value.trim(), model: document.getElementById('fastModel').value.trim(), key: document.getElementById('fastKey').value.trim() };
+  settings.strong = { baseURL: document.getElementById('strongBase').value.trim(), model: document.getElementById('strongModel').value.trim(), key: document.getElementById('strongKey').value.trim() };
+  localStorage.setItem(LS.settings, JSON.stringify(settings));
+  document.getElementById('settingsMask').classList.remove('open');
+  if (settings.fast.key) { setAiStatus('ok', '已配置，开始写代码'); return; }
+  setAiStatus('off', '未配置快模型 Key');
+}
+
+/* ==================== 分栏拖拽 ==================== */
+function setupSplit() {
+  const vs = document.getElementById('vSplit');
+  vs.addEventListener('mousedown', e => {
+    e.preventDefault();
+    const move = ev => {
+      const pct = Math.min(70, Math.max(20, ev.clientX / innerWidth * 100));
+      document.getElementById('leftPane').style.width = pct + '%';
+      if (editor) { editor.layout(); }
+    };
+    const up = () => { removeEventListener('mousemove', move); removeEventListener('mouseup', up); };
+    addEventListener('mousemove', move); addEventListener('mouseup', up);
+  });
+  const hs = document.getElementById('hSplit');
+  hs.addEventListener('mousedown', e => {
+    e.preventDefault();
+    const move = ev => {
+      const h = Math.min(innerHeight - 200, Math.max(60, innerHeight - ev.clientY));
+      document.getElementById('feedbackPane').style.height = h + 'px';
+      if (editor) { editor.layout(); }
+    };
+    const up = () => { removeEventListener('mousemove', move); removeEventListener('mouseup', up); };
+    addEventListener('mousemove', move); addEventListener('mouseup', up);
+  });
+}
+
+/* ==================== Monaco 初始化（CDN AMD 零构建 + worker blob 代理） ==================== */
+// 多 CDN 回退：npmmirror（国内实测 ~200ms）为主源，海外源兜底
+const MONACO_BASES = [
+  'https://registry.npmmirror.com/monaco-editor/0.53.0/files/min',
+  'https://cdn.jsdelivr.net/npm/monaco-editor@0.53.0/min',
+  'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.53.0/min'
+];
+
+function bootMonaco(baseIdx) {
+  baseIdx = baseIdx || 0;
+  if (baseIdx >= MONACO_BASES.length) {
+    document.getElementById('editorWrap').innerHTML = '<div style="padding:20px;color:#ef4743">Monaco 所有 CDN 均加载失败，检查网络后刷新。</div>';
+    return;
+  }
+  const base = MONACO_BASES[baseIdx];
+  const loader = document.createElement('script');
+  loader.src = base + '/vs/loader.js';
+  loader.onload = () => {
+    require.config({ paths: { vs: base + '/vs' } });
+    // worker 跨域必须用 blob 代理，否则高亮 worker 因 CORS 降级
+    self.MonacoEnvironment = {
+      getWorkerUrl: function () {
+        return URL.createObjectURL(new Blob([
+          "self.MonacoEnvironment={baseUrl:'" + base + "/'};importScripts('" + base + "/vs/base/worker/workerMain.js');"
+        ], { type: 'text/javascript' }));
+      }
+    };
+    require(['vs/editor/editor.main'], initEditor, () => bootMonaco(baseIdx + 1));
+  };
+  loader.onerror = () => bootMonaco(baseIdx + 1);
+  document.head.appendChild(loader);
+}
+
+function initEditor() {
+  editor = monaco.editor.create(document.getElementById('editorWrap'), {
+    value: '', language: 'cpp', theme: 'vs-dark',
+    fontSize: 15, minimap: { enabled: false }, automaticLayout: true,
+    scrollBeyondLastLine: false, tabSize: 4, inlineSuggest: { enabled: true }
+  });
+
+  registerCppCompletion();
+
+  // 变更监听：回车（变更含换行）快触发，普通输入 800ms 防抖；同时持久化代码
+  editor.onDidChangeModelContent(e => {
+    if (suppressWatch) { return; }
+    const prob = PROBLEMS[curIdx];
+    localStorage.setItem(LS.code(prob.id), editor.getValue());
+    const hasNewline = e.changes.some(c => c.text.indexOf('\n') >= 0);
+    scheduleWatch(hasNewline);
+  });
+
+  renderProblem();
+  if (settings.fast.key) { setAiStatus('ok', '已配置，开始写代码'); return; }
+  setAiStatus('off', '未配置 Key（点右上角设置）');
+}
+
+/* ==================== C++ 自定义补全（# 补 include + 刷题 snippet） ==================== */
+function registerCppCompletion() {
+  const INCLUDES = ['bits/stdc++.h', 'vector', 'string', 'unordered_map', 'unordered_set', 'map', 'set', 'queue', 'stack', 'deque', 'algorithm', 'cmath', 'climits'];
+  const SNIPPETS = [
+    { label: 'unordered_map', insert: 'unordered_map<${1:int}, ${2:int}> ${3:mp};', detail: '哈希表' },
+    { label: 'unordered_set', insert: 'unordered_set<${1:int}> ${2:st};', detail: '哈希集合' },
+    { label: 'fori', insert: 'for (int ${1:i} = 0; ${1:i} < ${2:n}; ${1:i}++) {\n\t$0\n}', detail: 'for 循环' },
+    { label: 'whl', insert: 'while (${1:cond}) {\n\t$0\n}', detail: 'while 循环' },
+    { label: 'pqmin', insert: 'priority_queue<${1:int}, vector<${1:int}>, greater<${1:int}>> ${2:pq};', detail: '小顶堆' },
+    { label: 'pqmax', insert: 'priority_queue<${1:int}> ${2:pq};', detail: '大顶堆' },
+    { label: 'sortv', insert: 'sort(${1:v}.begin(), ${1:v}.end());', detail: '排序' }
+  ];
+  monaco.languages.registerCompletionItemProvider('cpp', {
+    triggerCharacters: ['#'],
+    provideCompletionItems: (model, position) => {
+      const line = model.getLineContent(position.lineNumber).slice(0, position.column - 1);
+      const word = model.getWordUntilPosition(position);
+      const range = { startLineNumber: position.lineNumber, endLineNumber: position.lineNumber, startColumn: word.startColumn, endColumn: word.endColumn };
+      // 行内出现 # 时给 include 清单
+      if (line.trimStart().startsWith('#')) {
+        return { suggestions: INCLUDES.map(h => ({
+          label: 'include <' + h + '>',
+          kind: monaco.languages.CompletionItemKind.Module,
+          insertText: 'include <' + h + '>',
+          range: range
+        })) };
+      }
+      return { suggestions: SNIPPETS.map(s => ({
+        label: s.label, detail: s.detail,
+        kind: monaco.languages.CompletionItemKind.Snippet,
+        insertText: s.insert,
+        insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+        range: range
+      })) };
+    }
+  });
+}
+
+/* ==================== 事件绑定与启动 ==================== */
+document.getElementById('btnList').addEventListener('click', () => toggleDrawer(true));
+document.getElementById('drawerMask').addEventListener('click', () => toggleDrawer(false));
+document.getElementById('btnPrev').addEventListener('click', () => gotoProblem(-1));
+document.getElementById('btnNext').addEventListener('click', () => gotoProblem(1));
+document.getElementById('btnRandom').addEventListener('click', () => {
+  if (PROBLEMS.length < 2) { return; }
+  let n = curIdx;
+  while (n === curIdx) { n = Math.floor(Math.random() * PROBLEMS.length); }
+  curIdx = n;
+  renderProblem();
+});
+document.getElementById('btnSubmit').addEventListener('click', () => submitCode(false));
+document.getElementById('btnSettings').addEventListener('click', openSettings);
+document.getElementById('btnCfgCancel').addEventListener('click', () => document.getElementById('settingsMask').classList.remove('open'));
+document.getElementById('btnCfgSave').addEventListener('click', saveSettings);
+document.querySelectorAll('#fbTabs .tab').forEach(t => t.addEventListener('click', () => switchTab(t.dataset.tab)));
+
+setupSplit();
+renderWatchTab();
+bootMonaco();
+</script>
+</body>
+</html>

@@ -1,0 +1,7 @@
+node_modules/
+package-lock.json
+
+# 私人头脑风暴录音与逐字稿，不入库
+*.mp3
+原文_*.txt
+纪要_*.txt
