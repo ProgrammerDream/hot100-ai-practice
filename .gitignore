@@ -1,6 +1,10 @@
 node_modules/
 package-lock.json
 
+# 本地状态文件（含 API Key 与做题进度），不入库
+hot100.state.json
+hot100.state.json.tmp
+
 # 私人头脑风暴录音与逐字稿，不入库
 *.mp3
 原文_*.txt

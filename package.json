@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "description": "日抛型单 HTML 刷题工具：AI 拿题解当上下文实时盯写 LeetCode Hot 100，思路偏了立刻纠正",
   "scripts": {
+    "start": "node server.js",
     "verify": "node test/verify.js"
   },
   "devDependencies": {

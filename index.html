@@ -146,7 +146,7 @@
 <div id="settingsMask">
   <div id="settingsBox">
     <h3>模型设置</h3>
-    <div class="note">Key 只保存在本机浏览器 localStorage，不会写进任何文件。三家国内供应商（百炼 / DeepSeek / 硅基流动）均支持浏览器直调；任何 OpenAI 兼容接口都能填。</div>
+    <div class="note">Key 与做题进度保存在项目目录的 hot100.state.json（本地文件，已在 .gitignore 排除，不会入库）。三家国内供应商（百炼 / DeepSeek / 硅基流动）均支持浏览器直调；任何 OpenAI 兼容接口都能填。</div>
     <div class="cfg-group">
       <h4>快模型（实时盯写，推荐百炼 qwen-flash）</h4>
       <div class="cfg-row"><label>baseURL</label><input id="fastBase"></div>
@@ -296,40 +296,55 @@ public:
   }
 ];
 
-/* ==================== 存储与状态 ==================== */
-const LS = {
-  settings: 'hot100.settings',
-  progress: 'hot100.progress',
-  code: id => 'hot100.code.' + id,
-  curProb: 'hot100.curProb'
-};
-
+/* ==================== 存储与状态（本地 JSON 文件，经 server.js 读写） ==================== */
 const DEFAULT_SETTINGS = {
   fast:   { baseURL: 'https://dashscope.aliyuncs.com/compatible-mode/v1', model: 'qwen-flash', key: '' },
   strong: { baseURL: 'https://api.deepseek.com', model: 'deepseek-v4-flash', key: '' }
 };
 
-function loadSettings() {
-  const raw = localStorage.getItem(LS.settings);
-  if (!raw) {
-    return JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
-  }
+// 应用全部状态：设置(含 Key)、做题进度、每题代码、当前题目；整体序列化到 hot100.state.json
+const appState = {
+  settings: JSON.parse(JSON.stringify(DEFAULT_SETTINGS)),
+  progress: {},
+  code: {},
+  curProb: null
+};
+// settings/progress 保持为顶层引用，后续代码按原样使用 settings.xxx / progress[id]
+const settings = appState.settings;
+const progress = appState.progress;
+
+let persistTimer = null;
+// 300ms 防抖整体落盘；服务器没起（如 file:// 直开）时静默降级为纯内存模式
+function persistState() {
+  clearTimeout(persistTimer);
+  persistTimer = setTimeout(() => {
+    fetch('/api/state', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(appState, null, 2)
+    }).catch(() => { /* 无服务器：不保存 */ });
+  }, 300);
+}
+
+// 启动时从服务器拉状态；settings 按 fast/strong 两层合并，缺字段时保住默认值
+async function loadState() {
   try {
-    const s = JSON.parse(raw);
-    return { fast: Object.assign({}, DEFAULT_SETTINGS.fast, s.fast), strong: Object.assign({}, DEFAULT_SETTINGS.strong, s.strong) };
-  } catch (e) {
-    return JSON.parse(JSON.stringify(DEFAULT_SETTINGS));
-  }
+    const resp = await fetch('/api/state');
+    if (!resp.ok) { return; }
+    const s = await resp.json();
+    if (s.settings) {
+      Object.assign(settings.fast, s.settings.fast || {});
+      Object.assign(settings.strong, s.settings.strong || {});
+    }
+    Object.assign(progress, s.progress || {});
+    Object.assign(appState.code, s.code || {});
+    if (s.curProb != null) { appState.curProb = s.curProb; }
+  } catch (e) { /* 无服务器：用默认空状态 */ }
 }
 
-function loadProgress() {
-  try { return JSON.parse(localStorage.getItem(LS.progress) || '{}'); } catch (e) { return {}; }
-}
-function saveProgress(p) { localStorage.setItem(LS.progress, JSON.stringify(p)); }
+function saveProgress() { persistState(); }
 
-let settings = loadSettings();
-let progress = loadProgress();
-let curIdx = Math.max(0, PROBLEMS.findIndex(p => String(p.id) === localStorage.getItem(LS.curProb)));
+let curIdx = 0;
 let editor = null;
 // 程序性 setValue（切题/恢复代码）不算用户输入，不触发监督也不落存储
 let suppressWatch = false;
@@ -639,7 +654,8 @@ function fireConfetti() {
 /* ==================== 题面与题目列表渲染 ==================== */
 function renderProblem() {
   const prob = PROBLEMS[curIdx];
-  localStorage.setItem(LS.curProb, String(prob.id));
+  appState.curProb = prob.id;
+  persistState();
   document.getElementById('probTitle').textContent = prob.title;
   document.getElementById('probMeta').innerHTML =
     '<span class="tag ' + prob.difficulty + '">' + prob.diffText + '</span><span class="tag">' + esc(prob.category) + '</span>';
@@ -663,7 +679,7 @@ function renderProblem() {
   // 恢复该题已写代码，没有则用起始模板
   if (editor) {
     suppressWatch = true;
-    const saved = localStorage.getItem(LS.code(prob.id));
+    const saved = appState.code[prob.id];
     editor.setValue(saved != null ? saved : prob.starterCode);
     suppressWatch = false;
     monaco.editor.setModelMarkers(editor.getModel(), 'ai-lint', []);
@@ -725,7 +741,7 @@ function openSettings() {
 function saveSettings() {
   settings.fast = { baseURL: document.getElementById('fastBase').value.trim(), model: document.getElementById('fastModel').value.trim(), key: document.getElementById('fastKey').value.trim() };
   settings.strong = { baseURL: document.getElementById('strongBase').value.trim(), model: document.getElementById('strongModel').value.trim(), key: document.getElementById('strongKey').value.trim() };
-  localStorage.setItem(LS.settings, JSON.stringify(settings));
+  persistState();
   document.getElementById('settingsMask').classList.remove('open');
   if (settings.fast.key) { setAiStatus('ok', '已配置，开始写代码'); return; }
   setAiStatus('off', '未配置快模型 Key');
@@ -803,7 +819,8 @@ function initEditor() {
   editor.onDidChangeModelContent(e => {
     if (suppressWatch) { return; }
     const prob = PROBLEMS[curIdx];
-    localStorage.setItem(LS.code(prob.id), editor.getValue());
+    appState.code[prob.id] = editor.getValue();
+    persistState();
     const hasNewline = e.changes.some(c => c.text.indexOf('\n') >= 0);
     scheduleWatch(hasNewline);
   });
@@ -869,9 +886,14 @@ document.getElementById('btnCfgCancel').addEventListener('click', () => document
 document.getElementById('btnCfgSave').addEventListener('click', saveSettings);
 document.querySelectorAll('#fbTabs .tab').forEach(t => t.addEventListener('click', () => switchTab(t.dataset.tab)));
 
-setupSplit();
-renderWatchTab();
-bootMonaco();
+// 启动：先拉本地状态（Key/进度/代码/当前题目），再初始化界面与编辑器
+(async () => {
+  await loadState();
+  curIdx = Math.max(0, PROBLEMS.findIndex(p => p.id === appState.curProb));
+  setupSplit();
+  renderWatchTab();
+  bootMonaco();
+})();
 </script>
 </body>
 </html>
