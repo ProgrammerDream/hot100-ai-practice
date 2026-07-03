@@ -31,7 +31,7 @@
 
 ## 自动化校验
 
-无需真实 API Key——用 Playwright 拦截 `/chat/completions` 返回 mock 响应，覆盖题库加载与 AI 全链路（防抖合并、换行触发、偏题波浪线、两关判定、重判、持久化）共 24 项：
+无需真实 API Key——用 Playwright 拦截 `/chat/completions` 返回 mock 响应，覆盖题库加载与 AI 全链路（防抖合并、换行触发、偏题波浪线、两关判定、重判、持久化、提示词代码格式化、模型乱码自愈）共 30 项：
 
 ```bash
 npm install

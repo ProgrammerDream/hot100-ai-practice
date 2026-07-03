@@ -24,6 +24,8 @@ function check(name, cond, detail) {
 
 // 计数器：区分快/强模型调用次数，供防抖与回归断言
 const counter = { fast: 0, strong: 0 };
+// 记录最后一次快模型请求的完整 user 内容，供提示词格式化断言
+const mockSeen = { lastFastUser: '' };
 
 /* ---------- 本地服务器管理 ---------- */
 let serverProc = null;
@@ -88,10 +90,17 @@ async function setupMockRoute(page) {
     let content;
     if (isFast) {
       counter.fast++;
-      // 代码里出现 FORLOOP_BAD 时模拟"思路偏了"，且故意用代码围栏包 JSON，验证兜底解析
-      content = userContent.includes('FORLOOP_BAD')
-        ? '```json\n{"on_track": false, "issues": [{"start_line": 1, "end_line": 1, "severity": "warning", "hint": "题解用哈希表，你在写别的，回到板子上"}], "summary": "思路偏离题解"}\n```'
-        : '{"on_track": true, "issues": [], "summary": "在正轨上"}';
+      mockSeen.lastFastUser = userContent;
+      // 模拟服务端生成劣化（乱码/特殊 token 泄漏，实例见 logs/260703-1325.md）：
+      // ALWAYS_GARBAGE 无论如何都乱码；RETRY_ME 仅在带 response_format 时乱码（去掉 JSON 约束即恢复）
+      if (userContent.includes('ALWAYS_GARBAGE') || (userContent.includes('RETRY_ME') && body.response_format)) {
+        content = '\nNo<< workNo is is no no partNo</tool_call>2222>>02</';
+      } else if (userContent.includes('FORLOOP_BAD')) {
+        // 模拟"思路偏了"，且故意用代码围栏包 JSON，验证兜底解析
+        content = '```json\n{"on_track": false, "issues": [{"start_line": 1, "end_line": 1, "severity": "warning", "hint": "题解用哈希表，你在写别的，回到板子上"}], "summary": "思路偏离题解"}\n```';
+      } else {
+        content = '{"on_track": true, "issues": [], "summary": "在正轨上"}';
+      }
     }
     if (!isFast) {
       counter.strong++;
@@ -273,6 +282,47 @@ const PERSIST_WAIT = 700;
   const topCnt = await page.locator('#hintsBox > details').count();
   const codeCnt = await page.locator('#fullSolution details').count();
   check('B18 提示面板结构(4 顶层+1 内嵌代码)', topCnt === 4 && codeCnt === 1, 'top=' + topCnt + ' nested=' + codeCnt);
+
+  /* ---------- C：发给模型的代码格式化（行数必须保持不变） ---------- */
+  console.log('[C] 提示词代码格式化');
+  const fmt = await page.evaluate(() => {
+    const a = formatCpp('class Solution {\npublic:\nint f() {\nif (x) {\nreturn 1;\n}\nreturn 0;\n}\n};').split('\n');
+    const b = formatCpp('int f() {\nstring s = "}{";\nreturn 1; // }\n}').split('\n');
+    const weird = 'int f(){\n      return 1;\n   }';
+    return { a: a, b: b, keepCount: formatCpp(weird).split('\n').length === 3 };
+  });
+  check('C1 缩进按大括号深度重排(含访问修饰符退级)',
+    fmt.a[1] === 'public:' && fmt.a[2] === '    int f() {' && fmt.a[4] === '            return 1;' && fmt.a[8] === '};',
+    JSON.stringify(fmt.a));
+  check('C2 字符串/注释里的大括号不影响缩进',
+    fmt.b[1] === '    string s = "}{";' && fmt.b[2] === '    return 1; // }' && fmt.b[3] === '}',
+    JSON.stringify(fmt.b));
+  check('C3 格式化不改变行数(行号映射不破坏)', fmt.keepCount);
+
+  // C4 集成：乱缩进代码触发盯写后，请求里的用户代码已格式化且行号前缀保留
+  await page.evaluate(() => monaco.editor.getModels()[0].setValue('int f(){\nreturn 1;\n}'));
+  await page.waitForTimeout(1600);
+  check('C4 发给模型的用户代码已格式化且行号保留',
+    mockSeen.lastFastUser.includes('2|     return 1;'),
+    mockSeen.lastFastUser.split('\n').filter(l => /^\d+\|/.test(l)).join(' ⏎ ').slice(0, 150));
+
+  /* ---------- D：模型乱码自愈（JSON 约束解码劣化时去掉 response_format 重试） ---------- */
+  console.log('[D] 模型乱码自愈');
+  const fastBeforeRetry = counter.fast;
+  await page.evaluate(() => monaco.editor.getModels()[0].setValue('void f() { RETRY_ME }'));
+  await page.waitForTimeout(2000);
+  const stRetry = (await page.textContent('#aiStatusText')) || '';
+  check('D1 乱码时自动去掉 response_format 重试成功',
+    counter.fast === fastBeforeRetry + 2 && stRetry.includes('正轨'),
+    'fast+' + (counter.fast - fastBeforeRetry) + ' status=' + stRetry);
+
+  const fastBeforeBad = counter.fast;
+  await page.evaluate(() => monaco.editor.getModels()[0].setValue('void g() { ALWAYS_GARBAGE }'));
+  await page.waitForTimeout(2000);
+  const stBad = (await page.textContent('#aiStatusText')) || '';
+  check('D2 两次皆乱码时提示更换模型',
+    counter.fast === fastBeforeBad + 2 && stBad.includes('更换模型'),
+    'fast+' + (counter.fast - fastBeforeBad) + ' status=' + stBad);
 
   // B19 服务器拒绝坏 JSON，状态文件不被写坏
   const badResp = await fetch(BASE + '/api/state', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{broken' });

@@ -392,6 +392,23 @@ async function callLLM(cfg, messages, opts) {
   return (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || '';
 }
 
+/* @formatter:off
+   JSON 任务统一入口：先带 response_format 调一次，解析失败（乱码/不守 JSON）时
+   自动去掉 response_format 重试一次——部分供应商的 JSON 约束解码叠加投机采样加速
+   （如 *-ultraspeed 模型）会产出 token 沙拉，去掉约束后往往恢复正常（实例见 logs/260703-1325.md）。
+   两次都失败则抛出带换模型建议的错误。
+   @formatter:on */
+async function callLLMJson(cfg, messages, opts) {
+  opts = opts || {};
+  let raw = await callLLM(cfg, messages, { json: true, signal: opts.signal });
+  let result = extractJson(raw);
+  if (result) { return result; }
+  raw = await callLLM(cfg, messages, { json: false, signal: opts.signal });
+  result = extractJson(raw);
+  if (result) { return result; }
+  throw new Error('模型返回乱码或不守 JSON，请在设置里更换模型（如该服务的非 ultraspeed 版本，或 qwen-flash / DeepSeek）。片段：「' + String(raw).slice(0, 60) + '」');
+}
+
 // 模型不守 JSON 约定时的兜底解析：剥代码围栏、截取首尾大括号
 function extractJson(text) {
   if (!text) { return null; }
@@ -400,6 +417,69 @@ function extractJson(text) {
   const start = t.indexOf('{'), end = t.lastIndexOf('}');
   if (start < 0 || end <= start) { return null; }
   try { return JSON.parse(t.slice(start, end + 1)); } catch (e) { return null; }
+}
+
+/* @formatter:off
+   轻量 C++ 逐行缩进格式化（发给模型前用，不改编辑器内容）：
+   - 只重排每行前导空白（4 空格 × 括号深度），绝不合并/拆分行——
+     用户代码带行号发送，模型按行号回报问题、前端按行号打波浪线，行数必须与编辑器一一对应
+   - 字符串/字符字面量、行注释、块注释里的括号不计入深度
+   - 预处理行(#开头)顶格；public:/private:/protected: 相对类体退一级
+   @formatter:on */
+function formatCpp(code) {
+  const out = [];
+  let depth = 0;       // 大括号深度
+  let parenDepth = 0;  // 未闭合小括号深度（跨行长条件/实参的续行额外缩进）
+  let inBlockComment = false;
+  for (const rawLine of code.split('\n')) {
+    const line = rawLine.trim();
+    if (!line) { out.push(''); continue; }
+
+    // 行首连续的 } ) 使本行缩进提前回退
+    let lead = 0;
+    if (!inBlockComment) {
+      for (const ch of line) {
+        if (ch === '}' || ch === ')') { lead++; continue; }
+        break;
+      }
+    }
+    let indent = depth + (parenDepth > 0 ? 1 : 0) - lead;
+    if (/^#/.test(line)) { indent = 0; }
+    if (/^(public|private|protected)\s*:/.test(line)) { indent = depth - 1; }
+    if (indent < 0) { indent = 0; }
+    out.push(' '.repeat(indent * 4) + line);
+
+    // 扫描本行更新括号深度，跳过字符串/字符/注释内的括号
+    let inStr = false, inChar = false;
+    for (let i = 0; i < line.length; i++) {
+      const c = line[i];
+      if (inBlockComment) {
+        if (c === '/' && line[i - 1] === '*') { inBlockComment = false; }
+        continue;
+      }
+      if (inStr) {
+        if (c === '\\') { i++; continue; }
+        if (c === '"') { inStr = false; }
+        continue;
+      }
+      if (inChar) {
+        if (c === '\\') { i++; continue; }
+        if (c === "'") { inChar = false; }
+        continue;
+      }
+      if (c === '/' && line[i + 1] === '/') { break; }
+      if (c === '/' && line[i + 1] === '*') { inBlockComment = true; i++; continue; }
+      if (c === '"') { inStr = true; continue; }
+      if (c === "'") { inChar = true; continue; }
+      if (c === '{') { depth++; }
+      if (c === '}') { depth--; }
+      if (c === '(') { parenDepth++; }
+      if (c === ')') { parenDepth--; }
+    }
+    if (depth < 0) { depth = 0; }
+    if (parenDepth < 0) { parenDepth = 0; }
+  }
+  return out.join('\n');
 }
 
 // 给代码加行号前缀，便于模型精确定位（抄 PR-Agent 的做法）
@@ -436,10 +516,10 @@ function buildUserContext(prob, code) {
     '',
     '【参考题解思路】' + prob.solutionText,
     '【参考题解代码】',
-    prob.solutionCode,
+    formatCpp(prob.solutionCode),
     '',
     '【用户当前代码（带行号）】',
-    numberLines(code)
+    numberLines(formatCpp(code))
   ].join('\n');
 }
 
@@ -475,15 +555,10 @@ async function runWatch() {
   watchAbort = new AbortController();
   setAiStatus('busy', 'AI 检查中…');
   try {
-    const raw = await callLLM(settings.fast, [
+    const result = await callLLMJson(settings.fast, [
       { role: 'system', content: WATCH_SYSTEM },
       { role: 'user', content: buildUserContext(prob, code) }
-    ], { json: true, signal: watchAbort.signal });
-    const result = extractJson(raw);
-    if (!result) {
-      setAiStatus('off', 'AI 返回无法解析');
-      return;
-    }
+    ], { signal: watchAbort.signal });
     lastCheckedCode = code;
     lastWatchResult = result;
     renderMarkers(result.issues || []);
@@ -496,7 +571,7 @@ async function runWatch() {
     setAiStatus('ok', (result.issues || []).length ? '在正轨上，有小问题' : '在正轨上');
   } catch (e) {
     if (e.name === 'AbortError') { return; }
-    setAiStatus('off', '调用失败: ' + e.message.slice(0, 80));
+    setAiStatus('off', '调用失败: ' + e.message.slice(0, 120));
   }
 }
 
@@ -578,12 +653,11 @@ async function submitCode(isRejudge) {
   lastSubmitHtml = '<div class="muted">强模型判定中…（思路 / 边界 两关）</div>';
   document.getElementById('fbBody').innerHTML = lastSubmitHtml;
   try {
-    const raw = await callLLM(settings.strong, [
+    const r = await callLLMJson(settings.strong, [
       { role: 'system', content: JUDGE_SYSTEM },
       { role: 'user', content: buildUserContext(prob, editor.getValue()) }
-    ], { json: true });
-    const r = extractJson(raw);
-    if (!r || !r.idea || !r.boundary) {
+    ]);
+    if (!r.idea || !r.boundary) {
       lastSubmitHtml = '<div class="watch-off">判定结果无法解析，点击重判。</div>' + rejudgeBtnHtml();
       document.getElementById('fbBody').innerHTML = lastSubmitHtml;
       bindRejudge();
