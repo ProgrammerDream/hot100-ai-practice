@@ -1,0 +1,12 @@
+{
+  "id": 98,
+  "slug": "validate-binary-search-tree",
+  "method": "方法一: 递归",
+  "solutionCode": "class Solution {\npublic:\n    bool helper(TreeNode* root, long long lower, long long upper) {\n        if (root == nullptr) {\n            return true;\n        }\n        if (root -> val <= lower || root -> val >= upper) { // 节点值必须严格落在开区间 (lower, upper) 内\n            return false;\n        }\n        return helper(root -> left, lower, root -> val) && helper(root -> right, root -> val, upper);\n    }\n    bool isValidBST(TreeNode* root) {\n        return helper(root, LONG_MIN, LONG_MAX);\n    }\n};",
+  "solutionText": "递归时给每个节点带上开区间 (lower, upper)：节点值必须严格落在区间内，往左递归把上界收紧为当前值，往右递归把下界收紧为当前值。初始边界用 LONG_MIN/LONG_MAX，防止节点值恰为 INT_MIN/INT_MAX 时误判。",
+  "hints": [
+    "题型是「递归验证 + 向下传约束」：只比较父子大小不够——整棵左子树都要小于根，想想怎么把这个范围约束传下去。",
+    "给递归函数带一个开区间 (lower, upper)：<strong>节点值必须严格在区间内</strong>；往左走收紧上界为当前值，往右走收紧下界为当前值。",
+    "<code>helper(root, lower, upper)</code>：空节点返回 true；val &lt;= lower 或 val &gt;= upper 返回 false；再递归 helper(left, lower, val) 与 helper(right, val, upper)。初始边界用 LONG_MIN / LONG_MAX 防 INT_MIN、INT_MAX 用例。"
+  ]
+}

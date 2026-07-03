@@ -1,0 +1,12 @@
+{
+  "id": 46,
+  "slug": "permutations",
+  "method": "方法一：回溯",
+  "solutionCode": "class Solution {\npublic:\n    void backtrack(vector<vector<int>>& res, vector<int>& output, int first, int len){\n        // 所有数都填完了\n        if (first == len) {\n            res.emplace_back(output);\n            return;\n        }\n        for (int i = first; i < len; ++i) {\n            // 动态维护数组\n            swap(output[i], output[first]);\n            // 继续递归填下一个数\n            backtrack(res, output, first + 1, len);\n            // 撤销操作\n            swap(output[i], output[first]);\n        }\n    }\n    vector<vector<int>> permute(vector<int>& nums) {\n        vector<vector<int> > res;\n        backtrack(res, nums, 0, (int)nums.size());\n        return res;\n    }\n};",
+  "solutionText": "回溯 + 原地交换：把数组视为左边「已填」、右边「待填」两段。递归到第 first 位时，依次把 i∈[first,len) 的每个数换到 first 位，递归填下一位，返回后再换回来撤销。first 等于 len 时记录一份答案。免去 visited 数组，易错点是撤销时必须对称地 swap 回去。",
+  "hints": [
+    "题型是「排列型回溯」：逐位确定每个位置放哪个数，试完一种选择要撤销后再试下一种。",
+    "官方写法不用 visited 数组：数组左段是已确定的排列、右段是剩余候选集合，靠 swap 维护这个不变量。",
+    "backtrack(first)：若 first==len 记录答案；否则 for i 从 first 到 len-1，<code>swap(output[i], output[first])</code> → 递归 first+1 → 再 swap 回来撤销。"
+  ]
+}

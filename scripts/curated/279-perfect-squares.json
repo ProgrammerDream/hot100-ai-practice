@@ -1,0 +1,12 @@
+{
+  "id": 279,
+  "slug": "perfect-squares",
+  "method": "方法一：动态规划",
+  "solutionCode": "class Solution {\npublic:\n    int numSquares(int n) {\n        vector<int> f(n + 1);\n        for (int i = 1; i <= n; i++) {\n            int minn = INT_MAX;\n            for (int j = 1; j * j <= i; j++) {\n                minn = min(minn, f[i - j * j]);\n            }\n            f[i] = minn + 1; // f[i] = 1 + min(f[i - j*j])，枚举最后一个平方数\n        }\n        return f[n];\n    }\n};",
+  "solutionText": "完全背包型 DP：f[i] 表示和为 i 的完全平方数最少数量。枚举最后一个平方数 j*j（j*j<=i）：f[i]=1+min(f[i-j*j])。边界 f[0]=0；因 1 是平方数，任何 i 都有解，无需判 -1。复杂度 O(n√n)。",
+  "hints": [
+    "题型是「完全背包 / 一维 DP」：把 n 拆成若干个平方数之和求最少个数，每个平方数可以无限次使用。",
+    "设 <code>f[i]</code> 表示和为 i 的完全平方数的最少数量，答案就是 f[n]。",
+    "转移：枚举最后一个平方数 j*j（j*j &lt;= i），<code>f[i] = 1 + min(f[i - j*j])</code>；边界 <code>f[0]=0</code>。任何数都能由若干个 1 凑出，必定有解。"
+  ]
+}

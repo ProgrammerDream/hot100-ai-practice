@@ -1,0 +1,12 @@
+{
+  "id": 21,
+  "slug": "merge-two-sorted-lists",
+  "method": "方法二：迭代",
+  "solutionCode": "class Solution {\npublic:\n    ListNode* mergeTwoLists(ListNode* l1, ListNode* l2) {\n        ListNode* preHead = new ListNode(-1); // 哨兵节点，免去头节点特判\n\n        ListNode* prev = preHead;\n        while (l1 != nullptr && l2 != nullptr) {\n            if (l1->val < l2->val) {\n                prev->next = l1;\n                l1 = l1->next;\n            } else {\n                prev->next = l2;\n                l2 = l2->next;\n            }\n            prev = prev->next;\n        }\n\n        // 合并后 l1 和 l2 最多只有一个还未被合并完，我们直接将链表末尾指向未合并完的链表即可\n        prev->next = l1 == nullptr ? l2 : l1;\n\n        return preHead->next;\n    }\n};",
+  "solutionText": "哨兵节点加迭代归并。建 preHead 哨兵免去头节点特判，prev 始终指向已合并部分的尾巴；每轮取 l1、l2 中较小的节点接到 prev 后面并前移该链，循环结束后把还没走完的那条链整体挂到尾部，返回 preHead->next。易错点：剩余部分直接整链接上即可，不必逐个搬运。",
+  "hints": [
+    "题型是「有序链表归并」：就是归并排序的 merge 一步，每次挑两条链头部较小的那个接到结果尾部。",
+    "用<strong>哨兵节点</strong> preHead 统一处理头节点；不变量：prev 始终指向已合并链的尾节点。",
+    "while (l1 &amp;&amp; l2) 中比较 l1-&gt;val 与 l2-&gt;val，较小者接到 prev-&gt;next 并前移该链和 prev；循环结束把非空的那条整链挂到 prev-&gt;next，返回 preHead-&gt;next。"
+  ]
+}

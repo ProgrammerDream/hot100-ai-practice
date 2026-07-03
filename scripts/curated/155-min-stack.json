@@ -1,0 +1,12 @@
+{
+  "id": 155,
+  "slug": "min-stack",
+  "method": "方法一：辅助栈",
+  "solutionCode": "class MinStack {\n    stack<int> x_stack;\n    stack<int> min_stack;\npublic:\n    MinStack() {\n        min_stack.push(INT_MAX); // 哨兵，首次 push 时不用判空\n    }\n\n    void push(int x) {\n        x_stack.push(x);\n        min_stack.push(min(min_stack.top(), x)); // 不变量：辅助栈顶 == 当前栈内最小值\n    }\n\n    void pop() {\n        x_stack.pop();\n        min_stack.pop();\n    }\n\n    int top() {\n        return x_stack.top();\n    }\n\n    int getMin() {\n        return min_stack.top();\n    }\n};",
+  "solutionText": "辅助栈与数据栈同步进出：push 时辅助栈压 min(辅助栈顶, x)，pop 时两栈同弹，始终维持「辅助栈顶 == 当前最小值」不变量，getMin O(1) 读栈顶。易错点：构造时先压 INT_MAX 作哨兵，否则首次 push 取 top() 访问空栈。",
+  "hints": [
+    "题型是「栈的设计题」：想 O(1) 查最小值，就让<strong>每一个栈状态</strong>都记住自己对应的最小值，而不是调用时现算。",
+    "再开一个辅助栈 min_stack，维持不变量：辅助栈顶 == 当前数据栈中所有元素的最小值；两个栈永远同 push、同 pop，高度一致。",
+    "push(x) 时辅助栈压入 min(min_stack.top(), x)；构造函数里先压一个 INT_MAX 当哨兵，第一次 push 就无需判空。getMin 直接返回 min_stack.top()。"
+  ]
+}

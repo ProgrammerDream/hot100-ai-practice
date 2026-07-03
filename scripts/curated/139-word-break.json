@@ -1,0 +1,12 @@
+{
+  "id": 139,
+  "slug": "word-break",
+  "method": "方法一：动态规划",
+  "solutionCode": "class Solution {\npublic:\n    bool wordBreak(string s, vector<string>& wordDict) {\n        auto wordDictSet = unordered_set <string> ();\n        for (auto word: wordDict) {\n            wordDictSet.insert(word);\n        }\n\n        auto dp = vector <bool> (s.size() + 1);\n        dp[0] = true; // 空串视为可拆分\n        for (int i = 1; i <= s.size(); ++i) {\n            for (int j = 0; j < i; ++j) {\n                if (dp[j] && wordDictSet.find(s.substr(j, i - j)) != wordDictSet.end()) { // 前 j 个可拆，且末段 s[j..i) 是字典单词\n                    dp[i] = true;\n                    break;\n                }\n            }\n        }\n\n        return dp[s.size()];\n    }\n};",
+  "solutionText": "可行性 DP：dp[i] 表示 s 前 i 个字符能否拆成字典单词。枚举末段单词起点 j：dp[j] 为真且 s[j..i) 在字典（unordered_set 加速）中则 dp[i] 为真，可提前 break。边界 dp[0]=true，答案 dp[n]。",
+  "hints": [
+    "题型是「字符串可行性 DP」：问整串能否被切成若干个字典单词，考虑「前缀能否拆分」的递推。",
+    "设 <code>dp[i]</code> 表示 s 的前 i 个字符能否被拆分成字典单词；先把 wordDict 放进 unordered_set&lt;string&gt; 加速查询。",
+    "转移：枚举最后一个单词的起点 j（0 &lt;= j &lt; i），若 <code>dp[j]</code> 为真且 <code>s.substr(j, i-j)</code> 在字典中，则 dp[i]=true 并 break；边界 <code>dp[0]=true</code>，答案是 dp[n]。"
+  ]
+}

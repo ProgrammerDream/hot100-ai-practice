@@ -1,0 +1,12 @@
+{
+  "id": 300,
+  "slug": "longest-increasing-subsequence",
+  "method": "方法二：贪心 + 二分查找",
+  "solutionCode": "class Solution {\npublic:\n    int lengthOfLIS(vector<int>& nums) {\n        int len = 1, n = (int)nums.size();\n        if (n == 0) {\n            return 0;\n        }\n        vector<int> d(n + 1, 0);\n        d[len] = nums[0];\n        for (int i = 1; i < n; ++i) {\n            if (nums[i] > d[len]) {\n                d[++len] = nums[i]; // 比 d 末尾大：直接延长\n            } else {\n                int l = 1, r = len, pos = 0; // 如果找不到说明所有的数都比 nums[i] 大，此时要更新 d[1]，所以这里将 pos 设为 0\n                while (l <= r) {\n                    int mid = (l + r) >> 1;\n                    if (d[mid] < nums[i]) {\n                        pos = mid;\n                        l = mid + 1;\n                    } else {\n                        r = mid - 1;\n                    }\n                }\n                d[pos + 1] = nums[i]; // 替换第一个 >= nums[i] 的位置，让末尾尽量小\n            }\n        }\n        return len;\n    }\n};",
+  "solutionText": "贪心+二分：d[len] 表示长度为 len 的递增子序列的最小末尾，可证 d 严格递增。比 d 末尾大就接上使 len+1；否则二分找第一个不小于它的位置替换，让末尾尽量小。len 即答案但 d 不是真实子序列；二分条件是 d[mid] < nums[i]。",
+  "hints": [
+    "题型是「贪心 + 二分」：想让递增子序列长得快，就要让每种长度的子序列末尾尽可能小。",
+    "维护数组 d：<code>d[len]</code> 表示所有长度为 len 的递增子序列中最小的末尾元素，可证明 d 单调递增，因此可以二分。",
+    "遍历 nums[i]：若比 <code>d[len]</code> 大就 <code>d[++len]=nums[i]</code>；否则二分找 d 中第一个 &gt;= nums[i] 的位置替换（条件写 <code>d[mid] &lt; nums[i]</code>）。最终 len 即答案。"
+  ]
+}

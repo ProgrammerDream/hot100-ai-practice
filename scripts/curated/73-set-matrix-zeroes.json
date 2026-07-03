@@ -1,0 +1,12 @@
+{
+  "id": 73,
+  "slug": "set-matrix-zeroes",
+  "method": "方法二：使用两个标记变量",
+  "solutionCode": "class Solution {\npublic:\n    void setZeroes(vector<vector<int>>& matrix) {\n        int m = matrix.size();\n        int n = matrix[0].size();\n        int flag_col0 = false, flag_row0 = false; // 先记录第一列 / 第一行自身是否含 0\n        for (int i = 0; i < m; i++) {\n            if (!matrix[i][0]) {\n                flag_col0 = true;\n            }\n        }\n        for (int j = 0; j < n; j++) {\n            if (!matrix[0][j]) {\n                flag_row0 = true;\n            }\n        }\n        for (int i = 1; i < m; i++) {\n            for (int j = 1; j < n; j++) {\n                if (!matrix[i][j]) {\n                    matrix[i][0] = matrix[0][j] = 0; // 用首行首列作为该行该列需置零的标记\n                }\n            }\n        }\n        for (int i = 1; i < m; i++) {\n            for (int j = 1; j < n; j++) {\n                if (!matrix[i][0] || !matrix[0][j]) {\n                    matrix[i][j] = 0;\n                }\n            }\n        }\n        if (flag_col0) {\n            for (int i = 0; i < m; i++) {\n                matrix[i][0] = 0;\n            }\n        }\n        if (flag_row0) {\n            for (int j = 0; j < n; j++) {\n                matrix[0][j] = 0;\n            }\n        }\n    }\n};",
+  "solutionText": "用首行首列充当标记数组：先用两个布尔变量记录首行首列自身是否含 0；再扫内部，遇 0 就把对应 matrix[i][0]、matrix[0][j] 置 0；然后按标记把内部置零；最后才处理首行首列。顺序不能颠倒，否则标记会被提前污染。",
+  "hints": [
+    "题型是「原地标记」：O(m+n) 的行列标记数组可以省掉——矩阵的第一行和第一列本身就能当标记位。",
+    "第一行 / 第一列既存数据又当标记会互相污染，所以额外用两个变量 flag_row0、flag_col0 先记录它们<strong>自身</strong>是否含 0。",
+    "扫内部（i、j 都从 1 开始）：遇 0 就置 matrix[i][0] = matrix[0][j] = 0；再按这些标记清零内部；<strong>最后</strong>才依据两个 flag 处理第一行和第一列。"
+  ]
+}

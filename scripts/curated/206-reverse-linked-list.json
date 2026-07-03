@@ -1,0 +1,12 @@
+{
+  "id": 206,
+  "slug": "reverse-linked-list",
+  "method": "方法一：迭代",
+  "solutionCode": "class Solution {\npublic:\n    ListNode* reverseList(ListNode* head) {\n        ListNode* prev = nullptr;\n        ListNode* curr = head;\n        while (curr) {\n            ListNode* next = curr->next; // 先暂存后继，防止改指针后断链\n            curr->next = prev; // 掉头：不变量是 prev 之前的部分已完成反转\n            prev = curr;\n            curr = next;\n        }\n        return prev;\n    }\n};",
+  "solutionText": "三指针迭代原地反转。prev 初始为 nullptr，curr 从 head 出发；每步先用 next 暂存 curr->next，再把 curr->next 掉头指向 prev，然后 prev、curr 各前移一位。循环结束时 curr 为空，prev 正是新头节点。易错点：必须先存 next 再改指针，否则链表在此处断开。",
+  "hints": [
+    "题型是「链表原地反转」：一边遍历，一边把每个节点的 next 掉头指向它的前一个节点。",
+    "需要三个指针：prev（已反转部分的头）、curr（当前节点）、next（暂存后继防断链）。不变量：prev 之前的链已全部反转完成。",
+    "循环体固定四步：ListNode* next = curr-&gt;next; curr-&gt;next = prev; prev = curr; curr = next。当 curr 为空时返回 prev。"
+  ]
+}

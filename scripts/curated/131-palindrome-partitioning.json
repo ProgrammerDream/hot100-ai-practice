@@ -1,0 +1,12 @@
+{
+  "id": 131,
+  "slug": "palindrome-partitioning",
+  "method": "方法一：回溯 + 动态规划预处理",
+  "solutionCode": "class Solution {\nprivate:\n    vector<vector<int>> f;\n    vector<vector<string>> ret;\n    vector<string> ans;\n    int n;\n\npublic:\n    void dfs(const string& s, int i) {\n        if (i == n) {\n            ret.push_back(ans);\n            return;\n        }\n        for (int j = i; j < n; ++j) {\n            if (f[i][j]) {\n                ans.push_back(s.substr(i, j - i + 1));\n                dfs(s, j + 1);\n                ans.pop_back();\n            }\n        }\n    }\n\n    vector<vector<string>> partition(string s) {\n        n = s.size();\n        f.assign(n, vector<int>(n, true));\n\n        for (int i = n - 1; i >= 0; --i) {\n            for (int j = i + 1; j < n; ++j) {\n                f[i][j] = (s[i] == s[j]) && f[i + 1][j - 1]; // i 倒序填表，保证 f[i+1][j-1] 已算好\n            }\n        }\n\n        dfs(s, 0);\n        return ret;\n    }\n};",
+  "solutionText": "先区间 DP 预处理 f[i][j] 表示 s[i..j] 是否回文（i 倒序填表），再回溯：dfs(s, i) 枚举 j，f[i][j] 为真就切下该段递归到 j+1，i==n 时收集当前路径。易错点：递归返回后必须 pop_back 撤销选择。",
+  "hints": [
+    "题型是「回溯」：枚举\"下一刀切在哪\"——从当前位置向后尝试每一个回文前缀，切完递归处理剩余后缀，走到末尾就收获一组方案。",
+    "判断子串回文别在回溯里现算：先用区间 DP 预处理 f[i][j] = (s[i] == s[j]) && f[i+1][j-1]，i 从大到小、j 从小到大填表，f 初始化全 true 覆盖短区间。",
+    "dfs(s, i)：i == n 时把当前路径存入答案并返回；否则 j 从 i 到 n-1 枚举，f[i][j] 为真则 push s.substr(i, j-i+1)、递归 dfs(s, j+1)，返回后 pop_back 撤销。"
+  ]
+}

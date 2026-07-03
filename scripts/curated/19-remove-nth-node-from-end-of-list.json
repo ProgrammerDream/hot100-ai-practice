@@ -1,0 +1,12 @@
+{
+  "id": 19,
+  "slug": "remove-nth-node-from-end-of-list",
+  "method": "方法三：双指针",
+  "solutionCode": "class Solution {\npublic:\n    ListNode* removeNthFromEnd(ListNode* head, int n) {\n        ListNode* dummy = new ListNode(0, head);\n        ListNode* first = head;\n        ListNode* second = dummy;\n        for (int i = 0; i < n; ++i) { // first 先走 n 步，保持与 second 间距为 n\n            first = first->next;\n        }\n        while (first) {\n            first = first->next;\n            second = second->next;\n        }\n        second->next = second->next->next; // 此时 second 恰是待删节点的前驱\n        ListNode* ans = dummy->next;\n        delete dummy;\n        return ans;\n    }\n};",
+  "solutionText": "一次遍历双指针。first 从 head 先走 n 步，second 从哨兵 dummy 出发与 first 同速前进；first 到 nullptr 时 second 恰好停在待删节点的前驱，执行 second->next = second->next->next 完成删除。哨兵节点保证删除头节点（n 等于链长）时无需特判，最后返回 dummy->next。",
+  "hints": [
+    "题型是「倒数第 k 个节点」：让两个指针保持 n 的固定间距同步走，一趟遍历就能定位倒数第 n 个。",
+    "加<strong>哨兵节点</strong> dummy 指向 head：first 从 head 出发先走 n 步，second 从 dummy 出发——这样 first 走到空时，second 正好停在待删节点的<strong>前驱</strong>。",
+    "first 先走 n 步后两针同速前进到 first 为空，执行 second-&gt;next = second-&gt;next-&gt;next 删除目标，返回 dummy-&gt;next（删头节点的情况被自然覆盖）。"
+  ]
+}

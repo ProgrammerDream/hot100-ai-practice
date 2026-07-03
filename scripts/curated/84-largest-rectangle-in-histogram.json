@@ -1,0 +1,12 @@
+{
+  "id": 84,
+  "slug": "largest-rectangle-in-histogram",
+  "method": "方法一：单调栈",
+  "solutionCode": "class Solution {\npublic:\n    int largestRectangleArea(vector<int>& heights) {\n        int n = heights.size();\n        vector<int> left(n), right(n);\n\n        stack<int> mono_stack;\n        for (int i = 0; i < n; ++i) {\n            while (!mono_stack.empty() && heights[mono_stack.top()] >= heights[i]) {\n                mono_stack.pop();\n            }\n            left[i] = (mono_stack.empty() ? -1 : mono_stack.top()); // 左边第一个高度小于它的下标，不存在记 -1\n            mono_stack.push(i);\n        }\n\n        mono_stack = stack<int>();\n        for (int i = n - 1; i >= 0; --i) {\n            while (!mono_stack.empty() && heights[mono_stack.top()] >= heights[i]) {\n                mono_stack.pop();\n            }\n            right[i] = (mono_stack.empty() ? n : mono_stack.top()); // 右边第一个高度小于它的下标，不存在记 n\n            mono_stack.push(i);\n        }\n\n        int ans = 0;\n        for (int i = 0; i < n; ++i) {\n            ans = max(ans, (right[i] - left[i] - 1) * heights[i]); // 以 heights[i] 为高能延伸的宽度\n        }\n        return ans;\n    }\n};",
+  "solutionText": "枚举每根柱子作为高：用单调栈求出左右两侧第一个高度小于它的位置 left[i]、right[i]，宽度即 right[i]-left[i]-1，面积取最大。两次遍历各维护栈内高度递增的单调栈。易错点：左边不存在记 -1、右边记 n，宽度公式才成立。",
+  "hints": [
+    "题型是「枚举高」：最大矩形一定以某根柱子的高度为高，问题转化为求每根柱子向左右最多能延伸多宽。",
+    "延伸的边界是左右两侧<strong>第一个高度小于它</strong>的柱子。用单调栈（栈内下标对应高度从底到顶递增）可以 O(n) 求出所有柱子的 left[i] 和 right[i]。",
+    "从左到右遍历：先弹掉栈顶高度 &gt;= heights[i] 的下标，left[i] = 栈顶（空则 -1），再压入 i；从右到左同理得 right[i]（空则 n）。答案为 max((right[i] - left[i] - 1) * heights[i])。"
+  ]
+}

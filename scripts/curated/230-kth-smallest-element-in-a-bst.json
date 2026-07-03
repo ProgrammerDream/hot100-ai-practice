@@ -1,0 +1,12 @@
+{
+  "id": 230,
+  "slug": "kth-smallest-element-in-a-bst",
+  "method": "方法一：中序遍历",
+  "solutionCode": "class Solution {\npublic:\n    int kthSmallest(TreeNode* root, int k) {\n        stack<TreeNode *> stack;\n        while (root != nullptr || stack.size() > 0) {\n            while (root != nullptr) {\n                stack.push(root);\n                root = root->left;\n            }\n            root = stack.top();\n            stack.pop();\n            --k; // 弹栈顺序即中序递增顺序，第 k 次弹出的就是第 k 小\n            if (k == 0) {\n                break;\n            }\n            root = root->right;\n        }\n        return root->val;\n    }\n};",
+  "solutionText": "用栈做迭代中序遍历：不断沿左链入栈，弹栈访问一个节点就把 k 减一，减到 0 时刚弹出的节点就是第 k 小，随后转向右子树继续。利用 BST 中序遍历严格递增的性质，访问到第 k 个立即终止，不必遍历整棵树。",
+  "hints": [
+    "题型是「BST 性质 + 中序遍历」：BST 的中序遍历是递增序列，第 k 小就是中序第 k 个被访问的节点。",
+    "用 stack&lt;TreeNode*&gt; 写迭代中序：先沿左链一路入栈，弹栈时计数，访问到第 k 个就能<strong>提前停止</strong>，不用遍历整棵树。",
+    "外层 while(root 非空或栈非空)：内层把 root 沿左链全部入栈；弹出栈顶后 --k，k==0 就 break 返回该节点值，否则 root = root-&gt;right 转向右子树。"
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "id": 160,
+  "slug": "intersection-of-two-linked-lists",
+  "method": "方法二：双指针",
+  "solutionCode": "class Solution {\npublic:\n    ListNode *getIntersectionNode(ListNode *headA, ListNode *headB) {\n        if (headA == nullptr || headB == nullptr) {\n            return nullptr;\n        }\n        ListNode *pA = headA, *pB = headB;\n        while (pA != pB) {\n            pA = pA == nullptr ? headB : pA->next; // 走完 A 接着走 B：两指针总路程同为 a+b，抹平长度差\n            pB = pB == nullptr ? headA : pB->next;\n        }\n        return pA;\n    }\n};",
+  "solutionText": "双指针同速遍历：pA 走完链表 A 后转到 B 的头，pB 走完 B 后转到 A 的头。两者走的总路程都是 a+b，若相交必在交点相遇；不相交则会同时走到 nullptr 而相等退出，返回值恰好就是 nullptr。易错点：是走到 nullptr 才切换到另一条链，不是走到尾节点就切换。",
+  "hints": [
+    "题型是「链表双指针」：不求长度、不用哈希，想办法让两个指针抹平两条链的长度差后同步走到交点。",
+    "关键不变量：pA 走完 A 再走 B，pB 走完 B 再走 A，两条路径总长都是 a+b，所以第二段路上它们会在交点（或 nullptr）对齐相遇。",
+    "声明 ListNode *pA = headA, *pB = headB；循环 while (pA != pB)：pA 为空则跳到 headB，否则 pA = pA-&gt;next（pB 对称处理）；循环结束返回 pA，相交点或 nullptr 都被统一覆盖。"
+  ]
+}

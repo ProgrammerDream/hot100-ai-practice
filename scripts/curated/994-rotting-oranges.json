@@ -1,0 +1,12 @@
+{
+  "id": 994,
+  "slug": "rotting-oranges",
+  "method": "方法一：多源广度优先搜索",
+  "solutionCode": "class Solution {\n    int cnt;\n    int dis[10][10];\n    int dir_x[4] = {0, 1, 0, -1};\n    int dir_y[4] = {1, 0, -1, 0};\npublic:\n    int orangesRotting(vector<vector<int>>& grid) {\n        queue<pair<int, int>>Q;\n        memset(dis, -1, sizeof(dis));\n        cnt = 0;\n        int n = (int)grid.size(), m = (int)grid[0].size(), ans = 0;\n        for (int i = 0; i < n; ++i) {\n            for (int j = 0; j < m; ++j) {\n                if (grid[i][j] == 2) {\n                    Q.emplace(i, j); // 所有腐烂橘子同时入队：多源 BFS\n                    dis[i][j] = 0;\n                }\n                else if (grid[i][j] == 1) {\n                    cnt += 1;\n                }\n            }\n        }\n        while (!Q.empty()){\n            auto [r, c] = Q.front();\n            Q.pop();\n            for (int i = 0; i < 4; ++i) {\n                int tx = r + dir_x[i];\n                int ty = c + dir_y[i];\n                if (tx < 0|| tx >= n || ty < 0|| ty >= m || ~dis[tx][ty] || !grid[tx][ty]) { // 越界 / 已访问(~dis 非零) / 空格子都跳过\n                    continue;\n                }\n                dis[tx][ty] = dis[r][c] + 1;\n                Q.emplace(tx, ty);\n                if (grid[tx][ty] == 1) {\n                    cnt -= 1;\n                    ans = dis[tx][ty];\n                    if (!cnt) {\n                        break;\n                    }\n                }\n            }\n        }\n        return cnt ? -1 : ans;\n    }\n};",
+  "solutionText": "多源 BFS：先扫一遍网格，把所有腐烂橘子同时入队并记距离 0，同时统计新鲜橘子数 cnt。逐层向四个方向扩散，每感染一个新鲜橘子就 cnt 减一、答案更新为它的距离。结束后 cnt 仍大于 0 返回 -1；一开始就没有新鲜橘子时答案自然为 0。",
+  "hints": [
+    "题型是「多源 BFS 求最短扩散时间」：所有腐烂橘子同时作为起点向外一层层感染，层数就是分钟数。",
+    "用 <code>queue&lt;pair&lt;int,int&gt;&gt;</code> 存坐标，dis 数组记每个格子被感染的时刻（-1 表示未访问），同时维护新鲜橘子计数 cnt。",
+    "初始化把所有值为 2 的格子入队、dis 置 0；出队时向四方向扩展，跳过越界/已访问/空格子，感染到新鲜橘子就 cnt 减一、答案更新为它的 dis；最后 cnt&gt;0 则返回 -1。"
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "id": 198,
+  "slug": "house-robber",
+  "method": "方法一：动态规划",
+  "solutionCode": "class Solution {\npublic:\n    int rob(vector<int>& nums) {\n        if (nums.empty()) {\n            return 0;\n        }\n        int size = nums.size();\n        if (size == 1) {\n            return nums[0];\n        }\n        int first = nums[0], second = max(nums[0], nums[1]); // first=dp[i-2]，second=dp[i-1]\n        for (int i = 2; i < size; i++) {\n            int temp = second;\n            second = max(first + nums[i], second); // 偷第 i 间（first+nums[i]）或不偷（second）\n            first = temp;\n        }\n        return second;\n    }\n};",
+  "solutionText": "线性 DP：dp[i] 表示偷前 i 间房的最大金额，第 i 间偷或不偷取较大：dp[i]=max(dp[i-2]+nums[i], dp[i-1])。只依赖前两项，用 first/second 两变量滚动。注意特判空数组与仅一间房两个边界。",
+  "hints": [
+    "题型是「线性 DP（相邻互斥）」：每间房只有偷 / 不偷两种选择，且不能偷相邻两间，按房间顺序递推。",
+    "设 <code>dp[i]</code> 表示只考虑前 i 间房能偷到的最大金额；第 i 间要么不偷（继承 dp[i-1]），要么偷（只能接 dp[i-2]）。",
+    "转移：<code>dp[i] = max(dp[i-2] + nums[i], dp[i-1])</code>，初始 <code>dp[0]=nums[0]</code>、<code>dp[1]=max(nums[0], nums[1])</code>；只依赖前两项，可用 first/second 两个变量滚动。"
+  ]
+}

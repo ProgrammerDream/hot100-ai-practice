@@ -1,0 +1,12 @@
+{
+  "id": 3,
+  "slug": "longest-substring-without-repeating-characters",
+  "method": "方法一：滑动窗口",
+  "solutionCode": "class Solution {\npublic:\n    int lengthOfLongestSubstring(string s) {\n        // 哈希集合，记录每个字符是否出现过\n        unordered_set<char> occ;\n        int n = s.size();\n        // 右指针，初始值为 -1，相当于我们在字符串的左边界的左侧，还没有开始移动\n        int rk = -1, ans = 0;\n        // 枚举左指针的位置，初始值隐性地表示为 -1\n        for (int i = 0; i < n; ++i) {\n            if (i != 0) {\n                // 左指针向右移动一格，移除一个字符\n                occ.erase(s[i - 1]);\n            }\n            while (rk + 1 < n && !occ.count(s[rk + 1])) {\n                // 不断地移动右指针\n                occ.insert(s[rk + 1]);\n                ++rk;\n            }\n            // 第 i 到 rk 个字符是一个极长的无重复字符子串\n            ans = max(ans, rk - i + 1);\n        }\n        return ans;\n    }\n};",
+  "solutionText": "滑动窗口 + 哈希集合。枚举左端点 i，右指针 rk 只进不退：每轮先把 s[i-1] 移出集合，再不断右扩直到 s[rk+1] 与窗口内字符重复为止，窗口 [i, rk] 始终无重复，用 rk-i+1 更新答案。易错点：rk 初始为 -1 表示空窗口；两个指针各最多走 n 步，整体 O(n)。",
+  "hints": [
+    "题型是「滑动窗口」：窗口内维持\"无重复字符\"这一性质，左端右移时右端<strong>不需要回退</strong>。",
+    "用 unordered_set&lt;char&gt; occ 表示当前窗口内出现过的字符，insert/erase/count 都是 O(1)。",
+    "外层 for 枚举左端 i（i &gt; 0 时先 erase 掉 s[i-1]），内层 while (rk + 1 &lt; n && !occ.count(s[rk+1])) 就 insert 并 ++rk，随后 ans = max(ans, rk - i + 1)。"
+  ]
+}

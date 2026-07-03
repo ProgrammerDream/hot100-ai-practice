@@ -1,0 +1,12 @@
+{
+  "id": 240,
+  "slug": "search-a-2d-matrix-ii",
+  "method": "方法三：Z 字形查找",
+  "solutionCode": "class Solution {\npublic:\n    bool searchMatrix(vector<vector<int>>& matrix, int target) {\n        int m = matrix.size(), n = matrix[0].size();\n        int x = 0, y = n - 1; // 从右上角出发：它是本行最大、本列最小\n        while (x < m && y >= 0) {\n            if (matrix[x][y] == target) {\n                return true;\n            }\n            if (matrix[x][y] > target) {\n                --y;\n            }\n            else {\n                ++x;\n            }\n        }\n        return false;\n    }\n};",
+  "solutionText": "从右上角出发的排除法。当前值等于 target 直接返回 true；比 target 大说明它所在的一整列都大，列指针左移；比 target 小说明它所在的一整行都小，行指针下移。每步排除一行或一列，时间 O(m+n)。注意循环条件是 x < m 且 y >= 0，走出边界即说明不存在。",
+  "hints": [
+    "题型是「有序矩阵查找」：利用每行升序、每列升序的性质，找一个每次比较都能整行或整列排除的起点。",
+    "站在<strong>右上角</strong>：该位置是本行最大、本列最小，与 target 比较的结果能唯一决定往左走还是往下走。",
+    "维护坐标 (x, y) 从 (0, n-1) 出发：matrix[x][y] &gt; target 则 --y 排除一列；小于则 ++x 排除一行；相等返回 true。循环条件 x &lt; m 且 y &gt;= 0，越界返回 false。"
+  ]
+}

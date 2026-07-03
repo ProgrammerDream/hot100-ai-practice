@@ -1,0 +1,12 @@
+{
+  "id": 62,
+  "slug": "unique-paths",
+  "method": "方法一：动态规划",
+  "solutionCode": "class Solution {\npublic:\n    int uniquePaths(int m, int n) {\n        vector<vector<int>> f(m, vector<int>(n)); // f[i][j]：走到 (i,j) 的路径数\n        for (int i = 0; i < m; ++i) {\n            f[i][0] = 1;\n        }\n        for (int j = 0; j < n; ++j) {\n            f[0][j] = 1;\n        }\n        for (int i = 1; i < m; ++i) {\n            for (int j = 1; j < n; ++j) {\n                f[i][j] = f[i - 1][j] + f[i][j - 1]; // 只能从上方或左方走来，方案数相加\n            }\n        }\n        return f[m - 1][n - 1];\n    }\n};",
+  "solutionText": "二维 DP。f[i][j] 表示从左上角走到 (i,j) 的路径数，每格只能从上方或左方走来，故 f[i][j]=f[i-1][j]+f[i][j-1]。第一行、第一列只有一条直路，全部初始化为 1，答案为 f[m-1][n-1]。注意先填好边界再从 (1,1) 开始填内部，避免越界。",
+  "hints": [
+    "题型是「网格路径计数 DP」：走到每个格子的方案数，只取决于它上面和左面两个格子。",
+    "用 vector&lt;vector&lt;int&gt;&gt; f(m, vector&lt;int&gt;(n)) 记「走到 (i,j) 的路径数」；第一行和第一列都只有一种走法，全初始化为 1。",
+    "转移方程：<code>f[i][j] = f[i-1][j] + f[i][j-1]</code>，从 i=1、j=1 开始双重循环填表，最后返回 f[m-1][n-1]。"
+  ]
+}

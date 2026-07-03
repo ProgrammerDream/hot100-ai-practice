@@ -1,0 +1,12 @@
+{
+  "id": 283,
+  "slug": "move-zeroes",
+  "method": "方法一：双指针",
+  "solutionCode": "class Solution {\npublic:\n    void moveZeroes(vector<int>& nums) {\n        int n = nums.size(), left = 0, right = 0;\n        while (right < n) {\n            if (nums[right]) {\n                swap(nums[left], nums[right]); // 不变量：left 左边全非零且保持原相对顺序\n                left++;\n            }\n            right++;\n        }\n    }\n};",
+  "solutionText": "双指针一次遍历：right 负责扫描，left 指向「下一个非零数该放的位置」。遇到非零就 swap(nums[left], nums[right]) 并 left++。不变量：left 左侧全非零且保持原相对顺序，[left, right) 全是 0，交换恰好把 0 换到后面，原地完成。",
+  "hints": [
+    "题型是「原地双指针」：一次遍历把非零数依次压到前面，0 自然被挤到末尾。",
+    "两个指针分工：right 负责扫描每个元素，left 指向下一个非零数该放的位置；不变量是 left 左边全非零、[left, right) 全是 0。",
+    "遍历 right，若 nums[right] != 0 就 swap(nums[left], nums[right]) 再 left++；right 每步都前进。交换而不是覆盖，保证 0 被留在后面。"
+  ]
+}

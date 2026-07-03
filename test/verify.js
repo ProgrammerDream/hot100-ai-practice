@@ -178,6 +178,13 @@ const PERSIST_WAIT = 700;
   await page.goto(PAGE_URL);
   await waitMonaco(page);
 
+  // B0 题库构建产物加载：全量 Hot 100 且首题是两数之和（题单顺序）
+  const probStat = await page.evaluate(() => ({
+    n: (window.HOT100_PROBLEMS || []).length,
+    first: (window.HOT100_PROBLEMS || [{}])[0].title || ''
+  }));
+  check('B0 题库加载全量 100 题(首题=两数之和)', probStat.n === 100 && probStat.first.includes('两数之和'), JSON.stringify(probStat));
+
   // B1 回归：页面加载(程序性 setValue)不应发请求；同时确认配置已从 JSON 文件读回
   await page.waitForTimeout(1200);
   check('B1 页面加载不触发 AI 请求(回归 bug1)', counter.fast === 0, 'fast=' + counter.fast);

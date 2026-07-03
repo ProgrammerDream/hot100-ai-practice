@@ -1,0 +1,12 @@
+{
+  "id": 76,
+  "slug": "minimum-window-substring",
+  "method": "方法一：滑动窗口",
+  "solutionCode": "class Solution {\npublic:\n    unordered_map <char, int> ori, cnt;\n\n    bool check() { // 窗口计数是否已覆盖 t 中每种字符的需求量\n        for (const auto &p: ori) {\n            if (cnt[p.first] < p.second) {\n                return false;\n            }\n        }\n        return true;\n    }\n\n    string minWindow(string s, string t) {\n        for (const auto &c: t) {\n            ++ori[c];\n        }\n\n        int l = 0, r = -1;\n        int len = INT_MAX, ansL = -1, ansR = -1;\n\n        while (r < int(s.size())) {\n            if (ori.find(s[++r]) != ori.end()) {\n                ++cnt[s[r]];\n            }\n            while (check() && l <= r) { // 已覆盖时尽量收缩左边界，更新最短答案\n                if (r - l + 1 < len) {\n                    len = r - l + 1;\n                    ansL = l;\n                }\n                if (ori.find(s[l]) != ori.end()) {\n                    --cnt[s[l]];\n                }\n                ++l;\n            }\n        }\n\n        return ansL == -1 ? string() : s.substr(ansL, len);\n    }\n};",
+  "solutionText": "滑动窗口 + 两个哈希计数：ori 记 t 中每种字符的需求量，cnt 记窗口内计数。右指针不断扩张，一旦窗口覆盖 t（每种字符 cnt≥ori）就循环收缩左指针，收缩前更新最短长度和起点。易错：t 可含重复字符，判断覆盖须按计数比较而非按种类。",
+  "hints": [
+    "题型是「滑动窗口」：右指针负责扩张、左指针负责收缩，窗口在 s 上滑动，找覆盖 t 的最短窗口。",
+    "用两个 unordered_map&lt;char,int&gt;：ori 记录 t 中每个字符的需求量，cnt 记录当前窗口内的计数；窗口「覆盖」t 的条件是每种字符都有 cnt &gt;= ori。",
+    "r 右移时若 s[r] 在 ori 中就 ++cnt[s[r]]；一旦满足覆盖，就在保持覆盖的前提下不断 ++l 收缩，每次收缩前用 r - l + 1 更新最短答案的长度 len 和起点 ansL。"
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "id": 152,
+  "slug": "maximum-product-subarray",
+  "method": "方法一：动态规划",
+  "solutionCode": "class Solution {\npublic:\n    int maxProduct(vector<int>& nums) {\n        long maxF = nums[0], minF = nums[0], ans = nums[0];\n        for (int i = 1; i < nums.size(); ++i) {\n            long mx = maxF, mn = minF;\n            maxF = max(mx * nums[i], max((long)nums[i], mn * nums[i])); // 负负得正：最大值可能来自最小值乘负数\n            minF = min(mn * nums[i], min((long)nums[i], mx * nums[i]));\n            if(minF<INT_MIN) {\n                minF=nums[i];\n            }\n            ans = max(maxF, ans);\n        }\n        return ans;\n    }\n};",
+  "solutionText": "乘积会因负数翻转正负，只维护最大值会漏解：同时维护以 i 结尾的最大乘积 maxF 与最小乘积 minF，在 mx*nums[i]、mn*nums[i]、nums[i] 三者中取最大/最小，先存旧值再更新。答案取所有 maxF 的最大值。",
+  "hints": [
+    "题型是「带正负翻转的线性 DP」：乘积不像求和——很小的负数再乘一个负数可能变成最大，只记最大值会漏解。",
+    "以 i 结尾同时维护两个状态：<code>maxF</code> = 以 nums[i] 结尾的最大乘积，<code>minF</code> = 以 nums[i] 结尾的最小乘积（可能是绝对值很大的负数）。",
+    "转移在三个候选里取：<code>maxF = max(mx*nums[i], mn*nums[i], nums[i])</code>，minF 同理取 min；注意先用临时变量存旧的 maxF/minF 再更新，答案取所有 maxF 的最大值。"
+  ]
+}

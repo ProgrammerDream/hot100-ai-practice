@@ -168,11 +168,14 @@
 
 <canvas id="confetti"></canvas>
 
+<script src="problems.js"></script>
 <script>
 'use strict';
 
-/* ==================== 题库（M1 内嵌 3 道样例，M2 换构建脚本产物） ==================== */
-const PROBLEMS = [
+/* ==================== 题库 ====================
+   正式题库是构建产物 problems.js（scripts/fetch-problems.js 抓取 + build-problems.js 生成，
+   Hot 100 全量）；它缺失时兜底用下面内嵌的 3 道样例，保证单文件也能跑。 */
+const SAMPLE_PROBLEMS = [
   {
     id: 1, title: '1. 两数之和', category: '哈希', difficulty: 'easy', diffText: '简单',
     descHtml: `
@@ -295,6 +298,7 @@ public:
 };`
   }
 ];
+const PROBLEMS = (window.HOT100_PROBLEMS && window.HOT100_PROBLEMS.length) ? window.HOT100_PROBLEMS : SAMPLE_PROBLEMS;
 
 /* ==================== 存储与状态（本地 JSON 文件，经 server.js 读写） ==================== */
 const DEFAULT_SETTINGS = {

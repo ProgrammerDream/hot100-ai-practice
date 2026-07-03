@@ -1,0 +1,12 @@
+{
+  "id": 55,
+  "slug": "jump-game",
+  "method": "方法一：贪心",
+  "solutionCode": "class Solution {\npublic:\n    bool canJump(vector<int>& nums) {\n        int n = nums.size();\n        int rightmost = 0; // 目前可达的最远下标，不变量：所有 <= rightmost 的位置都可达\n        for (int i = 0; i < n; ++i) {\n            if (i <= rightmost) {\n                rightmost = max(rightmost, i + nums[i]);\n                if (rightmost >= n - 1) {\n                    return true;\n                }\n            }\n        }\n        return false;\n    }\n};",
+  "solutionText": "贪心一次遍历，维护可达最远下标 rightmost：i 可达（即 i <= rightmost）时用 i + nums[i] 更新它，一旦覆盖 n-1 返回 true；遍历完够不到则 false。易错点：i 超过 rightmost 即被 0 卡死，不能更新。",
+  "hints": [
+    "题型是「可达性判断」：不必枚举具体怎么跳，只需要知道<strong>最远</strong>能到哪个下标。",
+    "维护变量 rightmost = 目前可达的最远下标，不变量是：所有 &lt;= rightmost 的位置都可达；i &gt; rightmost 时 i 本身不可达，不能用它更新。",
+    "遍历 i：若 i &lt;= rightmost，则 rightmost = max(rightmost, i + nums[i])，一旦 rightmost &gt;= n - 1 返回 true；循环走完还没达到就返回 false。"
+  ]
+}

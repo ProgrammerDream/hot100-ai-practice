@@ -1,0 +1,12 @@
+{
+  "id": 24,
+  "slug": "swap-nodes-in-pairs",
+  "method": "方法二：迭代",
+  "solutionCode": "class Solution {\npublic:\n    ListNode* swapPairs(ListNode* head) {\n        ListNode* dummyHead = new ListNode(0);\n        dummyHead->next = head;\n        ListNode* temp = dummyHead; // 不变量：temp 始终指向待交换那一对的前驱\n        while (temp->next != nullptr && temp->next->next != nullptr) {\n            ListNode* node1 = temp->next;\n            ListNode* node2 = temp->next->next;\n            temp->next = node2;\n            node1->next = node2->next;\n            node2->next = node1;\n            temp = node1;\n        }\n        ListNode* ans = dummyHead->next;\n        delete dummyHead;\n        return ans;\n    }\n};",
+  "solutionText": "哨兵加迭代两两交换。temp 始终指向待交换对的前驱；每轮取 node1 = temp->next、node2 = node1->next，按 temp→node2→node1→原 node2->next 的顺序重接三条指针，再把 temp 前移到 node1。循环条件要求 temp 后面至少还有两个节点，末尾落单的节点自然保持原位，返回 dummy->next。",
+  "hints": [
+    "题型是「链表指针重接」：每次处理相邻的两个节点，交换后接回原链，关键是接线顺序别丢后继。",
+    "用哨兵节点 dummyHead，不变量：temp 始终是<strong>待交换那一对的前驱</strong>；循环条件是 temp-&gt;next 与 temp-&gt;next-&gt;next 都非空。",
+    "设 node1 = temp-&gt;next、node2 = node1-&gt;next，依次执行 temp-&gt;next = node2、node1-&gt;next = node2-&gt;next、node2-&gt;next = node1，最后 temp = node1 进入下一对。"
+  ]
+}

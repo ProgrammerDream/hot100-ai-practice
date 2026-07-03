@@ -1,0 +1,12 @@
+{
+  "id": 56,
+  "slug": "merge-intervals",
+  "method": "方法一：排序",
+  "solutionCode": "class Solution {\npublic:\n    vector<vector<int>> merge(vector<vector<int>>& intervals) {\n        if (intervals.size() == 0) {\n            return {};\n        }\n        sort(intervals.begin(), intervals.end()); // 按左端点升序，可合并的区间必相邻\n        vector<vector<int>> merged;\n        for (int i = 0; i < intervals.size(); ++i) {\n            int L = intervals[i][0], R = intervals[i][1];\n            if (!merged.size() || merged.back()[1] < L) {\n                merged.push_back({L, R});\n            }\n            else {\n                merged.back()[1] = max(merged.back()[1], R); // 有重叠：右端点取较大者，处理区间包含\n            }\n        }\n        return merged;\n    }\n};",
+  "solutionText": "先按左端点排序，可合并的区间必相邻。遍历每个 [L,R]：若结果集为空或最后区间右端点小于 L，不重叠直接加入；否则有重叠，把最后区间右端点更新为 max(旧值, R)。易错：[1,4] 包含 [2,3]，右端点必须取 max 而不能直接覆盖成 R。",
+  "hints": [
+    "题型是「区间排序 + 一次扫描」：先想清楚按什么顺序排序，才能让所有可以合并的区间挨在一起。",
+    "按<strong>左端点</strong>升序排序后，维护结果数组 merged，每个新区间只需要与 merged.back() 比较，不用回头看更早的区间。",
+    "设当前区间为 [L, R]：若 merged.back()[1] &lt; L 说明不重叠，直接 push；否则合并，merged.back()[1] = max(merged.back()[1], R)，取 max 才能处理区间被包含的情况。"
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "id": 104,
+  "slug": "maximum-depth-of-binary-tree",
+  "method": "方法一：深度优先搜索",
+  "solutionCode": "class Solution {\npublic:\n    int maxDepth(TreeNode* root) {\n        if (root == nullptr) return 0;\n        return max(maxDepth(root->left), maxDepth(root->right)) + 1;\n    }\n};",
+  "solutionText": "递归 DFS：树的最大深度 = max(左子树深度, 右子树深度) + 1，空节点深度为 0 作为递归出口，一行返回即可。这是「树形递归」的最小范式：出口、递归子树、用子结果合成当前答案；543 直径、110 平衡树等题都是同一模板的变体。",
+  "hints": [
+    "题型是「树的递归」：把大问题（整棵树的深度）拆成同构的子问题（左右子树的深度）。",
+    "递推关系：depth(root) = max(depth(left), depth(right)) + 1，其中 +1 是根节点这一层。",
+    "递归出口 root == nullptr 返回 0，然后一行 <code>return max(maxDepth(root-&gt;left), maxDepth(root-&gt;right)) + 1;</code> 收工。"
+  ]
+}

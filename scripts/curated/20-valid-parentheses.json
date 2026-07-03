@@ -1,0 +1,12 @@
+{
+  "id": 20,
+  "slug": "valid-parentheses",
+  "method": "方法一：栈",
+  "solutionCode": "class Solution {\npublic:\n    bool isValid(string s) {\n        int n = s.size();\n        if (n % 2 == 1) {\n            return false;\n        }\n\n        unordered_map<char, char> pairs = {\n            {')', '('},\n            {']', '['},\n            {'}', '{'}\n        };\n        stack<char> stk;\n        for (char ch: s) {\n            if (pairs.count(ch)) {\n                if (stk.empty() || stk.top() != pairs[ch]) { // 栈顶必须恰是当前右括号对应的左括号\n                    return false;\n                }\n                stk.pop();\n            }\n            else {\n                stk.push(ch);\n            }\n        }\n        return stk.empty();\n    }\n};",
+  "solutionText": "用栈保存尚未匹配的左括号：遍历字符串，遇左括号入栈；遇右括号时若栈为空或栈顶不是与之配对的左括号则直接判非法，否则弹栈。遍历结束后栈必须为空才有效。用哈希表存「右括号 → 左括号」映射让判断更整洁；长度为奇数可在开头直接返回 false。",
+  "hints": [
+    "题型是「栈匹配」：每个右括号必须和<strong>最近一个</strong>未匹配的左括号配对，\"最近\"天然对应栈的后进先出。",
+    "用 stack&lt;char&gt; 存左括号，再用 unordered_map&lt;char, char&gt; 存「右括号 → 对应左括号」的映射；字符串长度为奇数可以直接 return false。",
+    "遍历时：左括号一律入栈；遇右括号若栈空或 stk.top() != pairs[ch] 立刻返回 false，否则 pop。循环结束还要检查 stk.empty()——有剩余左括号也不合法。"
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "id": 763,
+  "slug": "partition-labels",
+  "method": "方法一：贪心",
+  "solutionCode": "class Solution {\npublic:\n    vector<int> partitionLabels(string s) {\n        int last[26]; // 每个字母最后一次出现的下标\n        int length = s.size();\n        for (int i = 0; i < length; i++) {\n            last[s[i] - 'a'] = i;\n        }\n        vector<int> partition;\n        int start = 0, end = 0;\n        for (int i = 0; i < length; i++) {\n            end = max(end, last[s[i] - 'a']); // 当前段必须至少延伸到段内每个字母的最后出现位置\n            if (i == end) {\n                partition.push_back(end - start + 1);\n                start = end + 1;\n            }\n        }\n        return partition;\n    }\n};",
+  "solutionText": "先记录每个字母最后出现的下标 last，遍历维护当前段 [start, end]：用 last[s[i]] 不断扩展 end；i == end 时段内字母都不会再出现，切段记长度 end-start+1，start 移到 end+1，每段尽可能短。",
+  "hints": [
+    "题型是「贪心划分」：同一字母必须落在同一段，一段可以结束的条件是——段内出现过的所有字母，后面都不会再出现。",
+    "先预处理 <code>last[26]</code>：每个字母<strong>最后一次</strong>出现的下标。当前段的右端点必须不断扩展到段内每个字母的 last。",
+    "遍历时维护 start 和 end：每个字符令 end = max(end, last[s[i] - 'a'])；当 i == end 时切段，push_back(end - start + 1)，然后 start = end + 1。"
+  ]
+}

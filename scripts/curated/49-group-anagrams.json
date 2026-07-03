@@ -1,0 +1,12 @@
+{
+  "id": 49,
+  "slug": "group-anagrams",
+  "method": "方法一：排序",
+  "solutionCode": "class Solution {\npublic:\n    vector<vector<string>> groupAnagrams(vector<string>& strs) {\n        unordered_map<string, vector<string>> mp;\n        for (string& str: strs) {\n            string key = str;\n            sort(key.begin(), key.end()); // 排序后的副本作为分组的键，原串不动\n            mp[key].emplace_back(str);\n        }\n        vector<vector<string>> ans;\n        for (auto it = mp.begin(); it != mp.end(); ++it) {\n            ans.emplace_back(it->second);\n        }\n        return ans;\n    }\n};",
+  "solutionText": "给每个字符串排序得到一个「签名」：互为字母异位词的串排序结果必然相同，因此用哈希表把「排序后的键 → 该组所有原串」归到同一个桶里，最后收集所有桶即为答案。易错点：排序的是键的副本，原串要原样放入桶中，不能把原串排了序。",
+  "hints": [
+    "题型是「分组归类」：为每个字符串设计一个\"规范化签名\"，签名相同的天然是一组。",
+    "用 unordered_map&lt;string, vector&lt;string&gt;&gt; 存「签名 → 该组所有原始字符串」。",
+    "签名就是把字符串的<strong>副本</strong> sort 一遍；遍历 strs 做 mp[key].emplace_back(str)，最后把每个桶的 vector 收进答案。"
+  ]
+}

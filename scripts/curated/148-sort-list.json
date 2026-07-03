@@ -1,0 +1,12 @@
+{
+  "id": 148,
+  "slug": "sort-list",
+  "method": "方法一：自顶向下归并排序",
+  "solutionCode": "class Solution {\npublic:\n    ListNode* sortList(ListNode* head) {\n        return sortList(head, nullptr);\n    }\n\n    ListNode* sortList(ListNode* head, ListNode* tail) {\n        if (head == nullptr) {\n            return head;\n        }\n        if (head->next == tail) { // 区间 [head, tail) 只剩单个节点：断链后返回\n            head->next = nullptr;\n            return head;\n        }\n        ListNode* slow = head, *fast = head;\n        while (fast != tail) {\n            slow = slow->next;\n            fast = fast->next;\n            if (fast != tail) {\n                fast = fast->next;\n            }\n        }\n        ListNode* mid = slow; // 快慢指针求得中点，劈成 [head, mid) 与 [mid, tail)\n        return merge(sortList(head, mid), sortList(mid, tail));\n    }\n\n    ListNode* merge(ListNode* head1, ListNode* head2) {\n        ListNode* dummyHead = new ListNode(0);\n        ListNode* temp = dummyHead, *temp1 = head1, *temp2 = head2;\n        while (temp1 != nullptr && temp2 != nullptr) {\n            if (temp1->val <= temp2->val) {\n                temp->next = temp1;\n                temp1 = temp1->next;\n            } else {\n                temp->next = temp2;\n                temp2 = temp2->next;\n            }\n            temp = temp->next;\n        }\n        if (temp1 != nullptr) {\n            temp->next = temp1;\n        } else if (temp2 != nullptr) {\n            temp->next = temp2;\n        }\n        return dummyHead->next;\n    }\n};",
+  "solutionText": "归并排序，递归处理左闭右开区间 [head,tail)：快慢指针找中点 mid，递归排好两半，再用哑结点合并两条有序链。终止：区间空返回空；只剩单节点时必须把 head->next 置空断链再返回，否则死循环。整体 O(n log n)。",
+  "hints": [
+    "题型是「链表排序」：要求 O(n log n)，链表上最顺手的是<strong>归并排序</strong>——拆一半、各自排好、再合并。",
+    "递归函数按<strong>左闭右开区间</strong> [head, tail) 处理；找中点用<strong>快慢指针</strong>：slow 走一步、fast 走两步，fast 到 tail 时 slow 即中点。",
+    "出口：head 为空返回空；head-&gt;next == tail 时把 head-&gt;next 置空断链、返回单节点。否则返回 merge(sortList(head, mid), sortList(mid, tail))，merge 用哑结点逐个接较小者，剩余整段挂尾。"
+  ]
+}

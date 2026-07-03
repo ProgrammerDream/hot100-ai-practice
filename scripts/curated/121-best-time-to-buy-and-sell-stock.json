@@ -1,0 +1,12 @@
+{
+  "id": 121,
+  "slug": "best-time-to-buy-and-sell-stock",
+  "method": "方法二：一次遍历",
+  "solutionCode": "class Solution {\npublic:\n    int maxProfit(vector<int>& prices) {\n        int inf = 1e9;\n        int minprice = inf, maxprofit = 0;\n        for (int price: prices) {\n            maxprofit = max(maxprofit, price - minprice); // 假设在历史最低点买入、今天卖出\n            minprice = min(price, minprice); // 维护到今天为止的历史最低价\n        }\n        return maxprofit;\n    }\n};",
+  "solutionText": "一次遍历，维护历史最低价 minprice 与最大利润 maxprofit：每天先用 price - minprice（最低点买入、今天卖出）更新答案，再用今天价格更新 minprice。初始 maxprofit 为 0，一路下跌时答案自然为 0。",
+  "hints": [
+    "题型是「一次遍历维护前缀信息」：第 i 天卖出的最优买入点，一定是前面所有天里的历史最低价。",
+    "只需两个变量：<code>minprice</code>（到目前为止的最低价格，初始取足够大如 1e9）和 <code>maxprofit</code>（当前最大利润，初始 0），边走边更新，O(n) 一趟完成。",
+    "对每个 price：先 maxprofit = max(maxprofit, price - minprice)，再 minprice = min(minprice, price)。先算利润再更新最低价（同一天买卖利润为 0，不影响答案），全程下跌时返回 0。"
+  ]
+}

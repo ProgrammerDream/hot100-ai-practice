@@ -1,0 +1,12 @@
+{
+  "id": 295,
+  "slug": "find-median-from-data-stream",
+  "method": "方法一：优先队列",
+  "solutionCode": "class MedianFinder {\npublic:\n    priority_queue<int, vector<int>, less<int>> queMin;    // 大顶堆：存较小的一半，堆顶是这半的最大值\n    priority_queue<int, vector<int>, greater<int>> queMax; // 小顶堆：存较大的一半，个数等于 queMin 或少 1\n\n    MedianFinder() {}\n\n    void addNum(int num) {\n        if (queMin.empty() || num <= queMin.top()) {\n            queMin.push(num);\n            if (queMax.size() + 1 < queMin.size()) {\n                queMax.push(queMin.top());\n                queMin.pop();\n            }\n        } else {\n            queMax.push(num);\n            if (queMax.size() > queMin.size()) {\n                queMin.push(queMax.top());\n                queMax.pop();\n            }\n        }\n    }\n\n    double findMedian() {\n        if (queMin.size() > queMax.size()) {\n            return queMin.top();\n        }\n        return (queMin.top() + queMax.top()) / 2.0;\n    }\n};",
+  "solutionText": "双堆把数据分成两半：大顶堆存较小的一半，小顶堆存较大的一半，保持大顶堆个数等于小顶堆或恰好多 1。插入时与大顶堆堆顶比较决定进哪个堆，超出平衡就把堆顶挪去另一边。中位数即大顶堆堆顶（总数为奇）或两堆顶平均。易错点：求平均要除以 2.0。",
+  "hints": [
+    "题型是「动态维护中位数」：把数据流分成较小一半和较大一半，中位数只由两半交界处的值决定。",
+    "用两个堆：<strong>大顶堆</strong>存较小的一半（堆顶是这半的最大值），<strong>小顶堆</strong>存较大的一半，并保持不变量：大顶堆个数 = 小顶堆个数，或恰好多 1。",
+    "addNum：num &lt;= 大顶堆堆顶（或其为空）就进大顶堆，否则进小顶堆；哪边超出不变量就把该堆堆顶挪到另一边。findMedian：大顶堆多 1 个时返回其堆顶，否则返回 (两堆顶之和) / 2.0。"
+  ]
+}

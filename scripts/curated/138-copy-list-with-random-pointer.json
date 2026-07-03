@@ -1,0 +1,12 @@
+{
+  "id": 138,
+  "slug": "copy-list-with-random-pointer",
+  "method": "方法一：回溯 + 哈希表",
+  "solutionCode": "class Solution {\npublic:\n    unordered_map<Node*, Node*> cachedNode;\n\n    Node* copyRandomList(Node* head) {\n        if (head == nullptr) {\n            return nullptr;\n        }\n        if (!cachedNode.count(head)) {\n            Node* headNew = new Node(head->val);\n            cachedNode[head] = headNew; // 先存表再递归，防止 random 成环导致无限递归/重复拷贝\n            headNew->next = copyRandomList(head->next);\n            headNew->random = copyRandomList(head->random);\n        }\n        return cachedNode[head];\n    }\n};",
+  "solutionText": "用哈希表记「原节点 → 新节点」，递归拷贝：遇到没拷贝过的节点就新建拷贝并立即存表，再递归填它的 next 和 random；已在表中则直接返回缓存。因为 random 可能指向任意节点甚至成环，「先存表、后递归」是保证每个节点只拷贝一次、不无限递归的关键。",
+  "hints": [
+    "题型是「带随机指针的链表深拷贝」：难点在 random 可能指向还没创建的节点，需要一种「先记账、再连线」的办法。",
+    "用 <code>unordered_map&lt;Node*, Node*&gt;</code> 记「原节点 → 拷贝节点」；不变量：原节点一旦在表里，它的拷贝就已创建（哪怕指针还没连全）。",
+    "递归函数：head 为空返回空；head 不在表中时<strong>先</strong>新建拷贝存入表，<strong>再</strong>递归赋值 next 和 random；最后统一返回表中 head 对应的拷贝。"
+  ]
+}

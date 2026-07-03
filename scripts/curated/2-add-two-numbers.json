@@ -1,0 +1,12 @@
+{
+  "id": 2,
+  "slug": "add-two-numbers",
+  "method": "方法一：模拟",
+  "solutionCode": "class Solution {\npublic:\n    ListNode* addTwoNumbers(ListNode* l1, ListNode* l2) {\n        ListNode *head = nullptr, *tail = nullptr;\n        int carry = 0;\n        while (l1 || l2) {\n            int n1 = l1 ? l1->val: 0; // 短链走完后按 0 补位\n            int n2 = l2 ? l2->val: 0;\n            int sum = n1 + n2 + carry;\n            if (!head) {\n                head = tail = new ListNode(sum % 10);\n            } else {\n                tail->next = new ListNode(sum % 10);\n                tail = tail->next;\n            }\n            carry = sum / 10;\n            if (l1) {\n                l1 = l1->next;\n            }\n            if (l2) {\n                l2 = l2->next;\n            }\n        }\n        if (carry > 0) {\n            tail->next = new ListNode(carry);\n        }\n        return head;\n    }\n};",
+  "solutionText": "按位模拟竖式加法。同时遍历两条链，逐位取值（走完的链按 0 补位）求 sum = n1 + n2 + carry，新节点存 sum % 10，进位 carry = sum / 10，用 head/tail 尾插法构建结果链。易错点：循环结束后若 carry 仍大于 0，必须再补一个进位节点，如 5+5=10 的最高位。",
+  "hints": [
+    "题型是「链表模拟加法」：数字已按逆序存储，从表头开始逐位相加即可，核心是维护好进位。",
+    "维护 int carry 进位变量；两链可能不等长，取值写成 l1 ? l1-&gt;val : 0 补零，循环条件 while (l1 || l2)。",
+    "每位算 sum = n1 + n2 + carry，尾插 new ListNode(sum % 10)，更新 carry = sum / 10；循环结束后若 carry &gt; 0，还要在尾部再补一个值为 carry 的节点。"
+  ]
+}

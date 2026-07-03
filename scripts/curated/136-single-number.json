@@ -1,0 +1,12 @@
+{
+  "id": 136,
+  "slug": "single-number",
+  "method": "方法一：位运算",
+  "solutionCode": "class Solution {\npublic:\n    int singleNumber(vector<int>& nums) {\n        int ret = 0;\n        for (auto e: nums) ret ^= e; // 成对的数异或两两抵消，剩下只出现一次的数\n        return ret;\n    }\n};",
+  "solutionText": "位运算。异或满足交换律、结合律，且 a^a=0、a^0=a：把全部元素异或到一起，出现两次的数两两抵消为 0，最终剩下的就是只出现一次的那个数。一次遍历、O(1) 空间，恰好满足题目「线性时间 + 常数空间」的要求；哈希表计数可行但不满足空间限制。",
+  "hints": [
+    "题型是「位运算」：题目要求 O(n) 时间 + O(1) 空间，排序和哈希表都不达标，往异或的性质上想。",
+    "关键性质：a^a=0、a^0=a，且异或满足交换律和结合律——运算顺序无关，成对出现的数一定互相抵消。",
+    "初始化 ret=0，一趟循环对每个元素执行 <code>ret ^= e</code>，循环结束后 ret 就是那个只出现一次的数。"
+  ]
+}

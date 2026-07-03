@@ -1,0 +1,12 @@
+{
+  "id": 79,
+  "slug": "word-search",
+  "method": "方法一：回溯",
+  "solutionCode": "class Solution {\npublic:\n    bool check(vector<vector<char>>& board, vector<vector<int>>& visited, int i, int j, string& s, int k) {\n        if (board[i][j] != s[k]) {\n            return false;\n        } else if (k == s.length() - 1) {\n            return true;\n        }\n        visited[i][j] = true;\n        vector<pair<int, int>> directions{{0, 1}, {0, -1}, {1, 0}, {-1, 0}};\n        bool result = false;\n        for (const auto& dir: directions) {\n            int newi = i + dir.first, newj = j + dir.second;\n            if (newi >= 0 && newi < board.size() && newj >= 0 && newj < board[0].size()) {\n                if (!visited[newi][newj]) {\n                    bool flag = check(board, visited, newi, newj, s, k + 1);\n                    if (flag) {\n                        result = true;\n                        break;\n                    }\n                }\n            }\n        }\n        visited[i][j] = false; // 回溯：撤销访问标记\n        return result;\n    }\n\n    bool exist(vector<vector<char>>& board, string word) {\n        int h = board.size(), w = board[0].size();\n        vector<vector<int>> visited(h, vector<int>(w));\n        for (int i = 0; i < h; i++) {\n            for (int j = 0; j < w; j++) {\n                bool flag = check(board, visited, i, j, word, 0);\n                if (flag) {\n                    return true;\n                }\n            }\n        }\n        return false;\n    }\n};",
+  "solutionText": "枚举每个格子作起点，check(i,j,k) 判断从 (i,j) 出发能否匹配 word[k..]：当前字符不等直接失败，k 到达末尾则成功。匹配后标记 visited[i][j]，向四个方向递归匹配下一个字符，任一方向成功即整体成功。易错点：函数返回前必须把 visited[i][j] 恢复为 false，否则会挡住其他路径。",
+  "hints": [
+    "题型是「网格路径回溯」：从每个格子出发 DFS 匹配单词，同一条路径中的格子不能重复使用。",
+    "用 visited 二维数组标记当前路径上的格子；递归参数 (i, j, k) 表示正在用 board[i][j] 匹配 word[k]。",
+    "check：board[i][j]!=word[k] 返回 false；k 是最后一位返回 true；否则置 visited，向四个未越界且未访问的邻居递归 k+1，返回前<strong>撤销 visited 标记</strong>。"
+  ]
+}

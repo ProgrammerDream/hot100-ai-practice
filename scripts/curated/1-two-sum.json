@@ -1,0 +1,12 @@
+{
+  "id": 1,
+  "slug": "two-sum",
+  "method": "方法二：哈希表",
+  "solutionCode": "class Solution {\npublic:\n    vector<int> twoSum(vector<int>& nums, int target) {\n        unordered_map<int, int> hashtable;\n        for (int i = 0; i < nums.size(); ++i) {\n            auto it = hashtable.find(target - nums[i]); // 先查：我需要的另一半是否已出现\n            if (it != hashtable.end()) {\n                return {it->second, i};\n            }\n            hashtable[nums[i]] = i; // 后存：保证不会用到自己\n        }\n        return {};\n    }\n};",
+  "solutionText": "一次遍历 + 哈希表。遍历到每个数时先在表中查「target 减去它」是否出现过：出现过则答案就是表中记的下标和当前下标；没出现则把当前数和下标存入表。先查后存保证不会把同一个元素用两次，也天然处理了 [3,3] 这种重复值用例。",
+  "hints": [
+    "题型是「查找配对」：一次遍历，边走边记住已经见过的数，问自己\"我需要的另一半出现过吗\"。",
+    "用 unordered_map&lt;int,int&gt; 存「值 → 下标」，查询是 O(1)。",
+    "遍历到 nums[i] 时，<strong>先</strong>查 target - nums[i] 是否已在表里：在就直接返回两个下标；不在再把 nums[i] 存进表。先查后存，天然避免用到自己。"
+  ]
+}

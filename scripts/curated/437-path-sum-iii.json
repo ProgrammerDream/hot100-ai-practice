@@ -1,0 +1,12 @@
+{
+  "id": 437,
+  "slug": "path-sum-iii",
+  "method": "方法二: 前缀和",
+  "solutionCode": "class Solution {\npublic:\n    unordered_map<long long, int> prefix;\n\n    int dfs(TreeNode *root, long long curr, int targetSum) {\n        if (!root) {\n            return 0;\n        }\n\n        int ret = 0;\n        curr += root->val;\n        if (prefix.count(curr - targetSum)) {\n            ret = prefix[curr - targetSum]; // 链上旧前缀和的个数 = 以当前节点结尾的合法路径数\n        }\n\n        prefix[curr]++;\n        ret += dfs(root->left, curr, targetSum);\n        ret += dfs(root->right, curr, targetSum);\n        prefix[curr]--; // 回溯撤销，保证表中只含根到当前节点这条链上的前缀和\n\n        return ret;\n    }\n\n    int pathSum(TreeNode* root, int targetSum) {\n        prefix[0] = 1;\n        return dfs(root, 0, targetSum);\n    }\n};",
+  "solutionText": "DFS 时维护根到当前节点的前缀和 curr 和「链上前缀和→出现次数」哈希表。到达节点先查表中 curr-targetSum 的次数，即以当前节点结尾的路径数；再把 curr 计入表、递归左右子树，回溯时撤销。表初始放 0→1 兜住从根出发的路径，和用 long long 防溢出。",
+  "hints": [
+    "题型是「树上前缀和」：任意向下路径的和 = 两个前缀和之差，把\"数路径\"转成\"数有多少个旧前缀和等于 curr - targetSum\"。",
+    "用 unordered_map&lt;long long,int&gt; 记录<strong>当前递归链上</strong>每个前缀和的出现次数，初始放入 prefix[0]=1 兜住从根开始的路径。",
+    "DFS 里 curr += val 后<strong>先</strong>取 ret = prefix[curr - targetSum]，再 prefix[curr]++ 并递归左右子树，<strong>回溯时 prefix[curr]--</strong>，防止兄弟子树之间串成假路径。"
+  ]
+}

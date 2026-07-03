@@ -1,0 +1,12 @@
+{
+  "id": 75,
+  "slug": "sort-colors",
+  "method": "方法三：双指针",
+  "solutionCode": "class Solution {\npublic:\n    void sortColors(vector<int>& nums) {\n        int n = nums.size();\n        int p0 = 0, p2 = n - 1; // 不变量：[0,p0) 全为 0，(p2,n-1] 全为 2\n        for (int i = 0; i <= p2; ++i) {\n            while (i <= p2 && nums[i] == 2) { // 换回来的可能还是 2，必须继续换\n                swap(nums[i], nums[p2]);\n                --p2;\n            }\n            if (nums[i] == 0) {\n                swap(nums[i], nums[p0]);\n                ++p0;\n            }\n        }\n    }\n};",
+  "solutionText": "双指针一趟扫描（荷兰国旗）。p0 指向下一个 0 该放的位置，p2 指向下一个 2 该放的位置，i 从头扫到 p2：遇到 2 时与 nums[p2] 交换并左移 p2——换回来的可能还是 2，必须用 while 连续换；遇到 0 时与 nums[p0] 交换并右移 p0。i 越过 p2 即结束，0 在前、2 在后、1 自然居中。",
+  "hints": [
+    "题型是「荷兰国旗问题」：只有 0/1/2 三种值，一趟扫描把 0 换到最前、2 换到最后，中间自然剩下 1。",
+    "双指针不变量：[0, p0) 全是 0，(p2, n-1] 全是 2；i 在中间扫描，循环条件是 i &lt;= p2，越过 p2 就结束。",
+    "遇到 2 时要用 <strong>while</strong> 反复与 nums[p2] 交换并 --p2（从后面换回来的可能还是 2）；之后若 nums[i]==0 再与 nums[p0] 交换并 ++p0。"
+  ]
+}

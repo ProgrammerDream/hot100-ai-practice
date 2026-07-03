@@ -1,0 +1,12 @@
+{
+  "id": 215,
+  "slug": "kth-largest-element-in-an-array",
+  "method": "方法一：基于快速排序的选择方法",
+  "solutionCode": "class Solution {\npublic:\n    int quickselect(vector<int> &nums, int l, int r, int k) {\n        if (l == r) {\n            return nums[k];\n        }\n        int partition = nums[l], i = l - 1, j = r + 1;\n        while (i < j) {\n            do i++; while (nums[i] < partition);\n            do j--; while (nums[j] > partition);\n            if (i < j) {\n                swap(nums[i], nums[j]);\n            }\n        }\n        if (k <= j) { // 目标下标在左半，只递归一侧\n            return quickselect(nums, l, j, k);\n        }\n        return quickselect(nums, j + 1, r, k);\n    }\n\n    int findKthLargest(vector<int> &nums, int k) {\n        int n = nums.size();\n        return quickselect(nums, 0, n - 1, n - k); // 第 k 大 = 升序排列后下标 n-k 的元素\n    }\n};",
+  "solutionText": "第 k 大即升序后下标 n-k 的元素，用快速选择：每轮取基准做 Hoare 划分，使左半都不大于右半，目标下标在哪侧就只递归那侧，l==r 时即答案，期望 O(n)。易错点：do-while 先移动再比较，递归区间是 [l,j] 与 [j+1,r]。",
+  "hints": [
+    "题型是「选择问题」：只要第 k 大这一个数，不必完整排序——基于快排划分的<strong>快速选择</strong>期望 O(n)。",
+    "第 k 大 = 升序排列后下标 <code>n - k</code> 的元素。每轮划分后左半都 &lt;= 右半，目标下标只会落在其中一侧，另一侧整块扔掉。",
+    "Hoare 划分：取 nums[l] 为基准，i、j 从两端相向走（do i++; while (nums[i] &lt; 基准)，do j--; while (nums[j] &gt; 基准)），i &lt; j 就交换；结束后目标下标 &lt;= j 递归 [l, j]，否则递归 [j+1, r]，l == r 时 nums[k] 即答案。"
+  ]
+}

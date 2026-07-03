@@ -1,0 +1,12 @@
+{
+  "id": 208,
+  "slug": "implement-trie-prefix-tree",
+  "method": "方法一：字典树",
+  "solutionCode": "class Trie {\nprivate:\n    vector<Trie*> children;\n    bool isEnd;\n\n    Trie* searchPrefix(string prefix) {\n        Trie* node = this;\n        for (char ch : prefix) {\n            ch -= 'a';\n            if (node->children[ch] == nullptr) {\n                return nullptr;\n            }\n            node = node->children[ch];\n        }\n        return node;\n    }\n\npublic:\n    Trie() : children(26), isEnd(false) {}\n\n    void insert(string word) {\n        Trie* node = this;\n        for (char ch : word) {\n            ch -= 'a';\n            if (node->children[ch] == nullptr) {\n                node->children[ch] = new Trie();\n            }\n            node = node->children[ch];\n        }\n        node->isEnd = true; // 单词结尾打标记\n    }\n\n    bool search(string word) {\n        Trie* node = this->searchPrefix(word);\n        return node != nullptr && node->isEnd;\n    }\n\n    bool startsWith(string prefix) {\n        return this->searchPrefix(prefix) != nullptr;\n    }\n};",
+  "solutionText": "每个节点存 26 个子指针和 isEnd 标记，类本身就是根节点。insert 沿字符逐层下行，缺节点就 new 一个，末尾置 isEnd。search 与 startsWith 共用 searchPrefix：沿前缀走到底返回末端节点，中途断链返回空。区别在于 search 还要求末端节点 isEnd 为真。",
+  "hints": [
+    "题型是「设计字典树（前缀树）」：一棵 26 叉树，从根到某节点的路径拼出一个前缀，单词末尾打标记。",
+    "节点结构：<code>vector&lt;Trie*&gt; children(26)</code> + <code>bool isEnd</code>；类本身就是节点，遍历从 <code>Trie* node = this</code> 出发。",
+    "抽一个私有 searchPrefix(prefix)：逐字符 <code>ch - 'a'</code> 下行，子节点为空返回 nullptr。search = 找到节点且 isEnd 为真；startsWith = 找到节点即可；insert 缺节点就新建。"
+  ]
+}

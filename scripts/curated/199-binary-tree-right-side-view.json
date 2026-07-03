@@ -1,0 +1,12 @@
+{
+  "id": 199,
+  "slug": "binary-tree-right-side-view",
+  "method": "方法二：广度优先搜索",
+  "solutionCode": "class Solution {\npublic:\n    vector<int> rightSideView(TreeNode* root) {\n        unordered_map<int, int> rightmostValueAtDepth;\n        int max_depth = -1;\n\n        queue<TreeNode*> nodeQueue;\n        queue<int> depthQueue;\n        nodeQueue.push(root);\n        depthQueue.push(0);\n\n        while (!nodeQueue.empty()) {\n            TreeNode* node = nodeQueue.front();nodeQueue.pop();\n            int depth = depthQueue.front();depthQueue.pop();\n\n            if (node != NULL) {\n                // 维护二叉树的最大深度\n                max_depth = max(max_depth, depth);\n\n                // 由于每一层最后一个访问到的节点才是我们要的答案，因此不断更新对应深度的信息即可\n                rightmostValueAtDepth[depth] =  node -> val;\n\n                nodeQueue.push(node -> left);\n                nodeQueue.push(node -> right);\n                depthQueue.push(depth + 1);\n                depthQueue.push(depth + 1);\n            }\n        }\n\n        vector<int> rightView;\n        for (int depth = 0; depth <= max_depth; ++depth) {\n            rightView.push_back(rightmostValueAtDepth[depth]);\n        }\n\n        return rightView;\n    }\n};",
+  "solutionText": "BFS 层序遍历，节点队列旁配一个同步的深度队列。同层节点按从左到右出队，出队时无条件用当前值覆盖「该深度的最右值」哈希表，一层里最后被访问的节点自然留下；最后按深度 0..max_depth 依次取出即右视图。空孩子也入队，出队时判空跳过即可。",
+  "hints": [
+    "题型是「按层看树」：右视图就是每一层<strong>最后一个</strong>（最右侧）节点的值，逐层遍历自然能拿到。",
+    "用 queue&lt;TreeNode*&gt; 做 BFS，再配一个同步的深度队列，外加哈希表「深度 → 该层最右值」记录结果。",
+    "出队时无条件执行 rightmostValueAtDepth[depth] = node-&gt;val：同层从左到右访问，<strong>最后写入的就是最右节点</strong>；遍历完按深度 0..max_depth 收集答案。"
+  ]
+}

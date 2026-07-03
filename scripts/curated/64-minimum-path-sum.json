@@ -1,0 +1,12 @@
+{
+  "id": 64,
+  "slug": "minimum-path-sum",
+  "method": "方法一：动态规划",
+  "solutionCode": "class Solution {\npublic:\n    int minPathSum(vector<vector<int>>& grid) {\n        if (grid.size() == 0 || grid[0].size() == 0) {\n            return 0;\n        }\n        int rows = grid.size(), columns = grid[0].size();\n        auto dp = vector<vector<int>>(rows, vector<int>(columns)); // dp[i][j]：走到 (i,j) 的最小路径和\n        dp[0][0] = grid[0][0];\n        for (int i = 1; i < rows; i++) {\n            dp[i][0] = dp[i - 1][0] + grid[i][0];\n        }\n        for (int j = 1; j < columns; j++) {\n            dp[0][j] = dp[0][j - 1] + grid[0][j];\n        }\n        for (int i = 1; i < rows; i++) {\n            for (int j = 1; j < columns; j++) {\n                dp[i][j] = min(dp[i - 1][j], dp[i][j - 1]) + grid[i][j]; // 取上、左更小的一条路\n            }\n        }\n        return dp[rows - 1][columns - 1];\n    }\n};",
+  "solutionText": "二维 DP。dp[i][j] 表示从左上角走到 (i,j) 的最小路径和，转移为 dp[i][j]=min(dp[i-1][j], dp[i][j-1])+grid[i][j]。易错点在边界：第一行只能从左来、第一列只能从上来，必须先沿边单独累加初始化，再填内部，答案在右下角 dp[rows-1][columns-1]。",
+  "hints": [
+    "题型是「网格 DP」：和「不同路径」同一个骨架，只是把\"方案数相加\"换成\"路径和取最小\"。",
+    "状态定义：dp[i][j] = 从 (0,0) 走到 (i,j) 的最小路径和；第一行、第一列没有两个来源，只能沿边把 grid 累加作为初始值。",
+    "内部转移：<code>dp[i][j] = min(dp[i-1][j], dp[i][j-1]) + grid[i][j]</code>，双重循环填表后返回 dp[rows-1][columns-1]。"
+  ]
+}

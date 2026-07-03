@@ -1,0 +1,12 @@
+{
+  "id": 101,
+  "slug": "symmetric-tree",
+  "method": "方法一：递归",
+  "solutionCode": "class Solution {\npublic:\n    bool check(TreeNode *p, TreeNode *q) {\n        if (!p && !q) return true;\n        if (!p || !q) return false;\n        return p->val == q->val && check(p->left, q->right) && check(p->right, q->left); // 镜像：左对右、右对左交叉比较\n    }\n\n    bool isSymmetric(TreeNode* root) {\n        return check(root->left, root->right);\n    }\n};",
+  "solutionText": "转成「两棵子树互为镜像」：check(p,q) 同时为空对称，恰一个空不对称，否则要求值相等且 p 左对 q 右、p 右对 q 左都镜像；入口传 root->left 与 root->right。易错：比较方向是交叉的，写成同向就成了判断两树相同。",
+  "hints": [
+    "题型是「树的递归」：单参数函数描述不了对称，把问题改写成「判断<strong>两棵</strong>子树是否互为镜像」。",
+    "写双参数函数 check(p, q)：两个都空 → true；只有一个空 → false；否则值相等且子树<strong>交叉</strong>互为镜像。",
+    "递归式：<code>p-&gt;val == q-&gt;val &amp;&amp; check(p-&gt;left, q-&gt;right) &amp;&amp; check(p-&gt;right, q-&gt;left)</code>，入口 check(root-&gt;left, root-&gt;right)。注意是左对右、右对左。"
+  ]
+}

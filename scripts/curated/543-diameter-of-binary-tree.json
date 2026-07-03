@@ -1,0 +1,12 @@
+{
+  "id": 543,
+  "slug": "diameter-of-binary-tree",
+  "method": "方法一：深度优先搜索",
+  "solutionCode": "class Solution {\n    int ans;\n    int depth(TreeNode* rt){\n        if (rt == NULL) {\n            return 0; // 访问到空节点了，返回0\n        }\n        int L = depth(rt->left); // 左儿子为根的子树的深度\n        int R = depth(rt->right); // 右儿子为根的子树的深度\n        ans = max(ans, L + R + 1); // 计算d_node即L+R+1 并更新ans\n        return max(L, R) + 1; // 返回该节点为根的子树的深度\n    }\npublic:\n    int diameterOfBinaryTree(TreeNode* root) {\n        ans = 1;\n        depth(root);\n        return ans - 1;\n    }\n};",
+  "solutionText": "直径 = 某节点左右子树深度之和的最大值。DFS 求深度时顺带更新答案：depth 返回 max(L,R)+1，途中用 L+R+1（经过该点的路径节点数）刷新成员 ans，最后返回 ans-1 换算成边数。易错：最长路径不一定过根，每个节点都要更新。",
+  "hints": [
+    "题型是「树的递归 + 沿途统计」：最长路径不一定经过根，要在<strong>每个节点</strong>上算一次「以它为拐点的最长路径」。",
+    "复用 104 的求深度递归：depth(rt) = max(L, R) + 1；拐点处的路径节点数是 L + R + 1，用一个成员变量 ans 沿途取最大。",
+    "depth 里先递归得到 L、R，然后 ans = max(ans, L + R + 1)，再返回 max(L, R) + 1；主函数把 ans 初始化为 1，最后返回 <code>ans - 1</code>（节点数换算成边数）。"
+  ]
+}

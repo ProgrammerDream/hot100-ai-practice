@@ -1,0 +1,12 @@
+{
+  "id": 153,
+  "slug": "find-minimum-in-rotated-sorted-array",
+  "method": "方法一：二分查找",
+  "solutionCode": "class Solution {\npublic:\n    int findMin(vector<int>& nums) {\n        int low = 0;\n        int high = nums.size() - 1;\n        while (low < high) {\n            int pivot = low + (high - low) / 2;\n            if (nums[pivot] < nums[high]) {\n                high = pivot; // pivot 可能就是最小值，不能减一\n            }\n            else {\n                low = pivot + 1; // nums[pivot] >= nums[high]，最小值一定在 pivot 右侧\n            }\n        }\n        return nums[low];\n    }\n};",
+  "solutionText": "与右端点比较的二分：nums[pivot] < nums[high] 说明最小值在左半，令 high = pivot（不能减一）；否则 low = pivot + 1。循环条件 low < high，退出时 low 即答案。易错点：和左端点比会有歧义。",
+  "hints": [
+    "题型是「旋转数组上的二分」：不需要 target，最小值就是那个\"比右侧边界元素小\"的分界点，用二分逼近它。",
+    "每次把 nums[pivot] 与 <strong>nums[high]</strong>（右端点）比较——与左端点比无法区分\"整段有序\"和\"跨过了最小值\"两种情况；循环条件是 low &lt; high。",
+    "nums[pivot] &lt; nums[high] 说明最小值在 [low, pivot]，令 high = pivot（不能减一，pivot 可能就是答案）；否则 low = pivot + 1。退出循环时返回 nums[low]。"
+  ]
+}

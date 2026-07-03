@@ -1,0 +1,12 @@
+{
+  "id": 53,
+  "slug": "maximum-subarray",
+  "method": "方法一：动态规划",
+  "solutionCode": "class Solution {\npublic:\n    int maxSubArray(vector<int>& nums) {\n        int pre = 0, maxAns = nums[0];\n        for (const auto &x: nums) {\n            pre = max(pre + x, x); // 以 x 结尾的最大子数组和：接上前一段或另起一段\n            maxAns = max(maxAns, pre);\n        }\n        return maxAns;\n    }\n};",
+  "solutionText": "线性 DP：pre 表示「以当前元素结尾的最大子数组和」，转移 pre = max(pre + x, x)——前段有正贡献就接上，否则从 x 另起一段；答案随遍历取所有 pre 的最大值。易错：maxAns 初值取 nums[0]，才能处理全负数数组。",
+  "hints": [
+    "题型是「线性 DP」：定义「以第 i 个数<strong>结尾</strong>的最大子数组和」，最终答案是所有位置该值的最大值。",
+    "状态只依赖前一个位置，可以滚动成单变量 pre；另设 maxAns 边遍历边取最大，初值用 nums[0] 才能处理全负数用例。",
+    "转移方程：pre = max(pre + x, x)——前面那段和为正就接上，否则从 x 另起一段；每步再 maxAns = max(maxAns, pre)。"
+  ]
+}

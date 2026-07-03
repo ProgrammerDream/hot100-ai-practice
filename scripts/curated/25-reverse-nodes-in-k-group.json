@@ -1,0 +1,12 @@
+{
+  "id": 25,
+  "slug": "reverse-nodes-in-k-group",
+  "method": "方法一：模拟",
+  "solutionCode": "class Solution {\npublic:\n    // 翻转一个子链表，并且返回新的头与尾\n    pair<ListNode*, ListNode*> myReverse(ListNode* head, ListNode* tail) {\n        ListNode* prev = tail->next;\n        ListNode* p = head;\n        while (prev != tail) {\n            ListNode* nex = p->next;\n            p->next = prev;\n            prev = p;\n            p = nex;\n        }\n        return {tail, head};\n    }\n\n    ListNode* reverseKGroup(ListNode* head, int k) {\n        ListNode* hair = new ListNode(0);\n        hair->next = head;\n        ListNode* pre = hair;\n\n        while (head) {\n            ListNode* tail = pre;\n            // 查看剩余部分长度是否大于等于 k\n            for (int i = 0; i < k; ++i) {\n                tail = tail->next;\n                if (!tail) {\n                    return hair->next;\n                }\n            }\n            ListNode* nex = tail->next;\n            // 这里是 C++17 的写法，也可以写成\n            // pair<ListNode*, ListNode*> result = myReverse(head, tail);\n            // head = result.first;\n            // tail = result.second;\n            tie(head, tail) = myReverse(head, tail);\n            // 把子链表重新接回原链表\n            pre->next = head;\n            tail->next = nex;\n            pre = tail;\n            head = tail->next;\n        }\n\n        return hair->next;\n    }\n};",
+  "solutionText": "哑结点 hair 接头前，pre 指向每组前驱。每轮从 pre 走 k 步找组尾 tail，不足 k 个直接结束；记住 tail->next，反转该段后 pre 接新头、新尾接回 nex，再前进到下一组。易错：断链前先存后继，不足 k 个保持原序。",
+  "hints": [
+    "题型是「链表分组反转」：把链表按 k 个一段切开，段内做一次标准的反转链表，段与段之间重新接好。",
+    "关键辅助结构是<strong>哑结点</strong>（hair）+ 指向每组前驱的 pre 指针：每处理完一组，pre 移到该组反转后的新尾部，保证组间连接不断。",
+    "每轮：从 pre 走 k 步找 tail（中途为空说明不足 k 个，直接返回）；记 nex = tail-&gt;next，反转 head..tail 后令 pre-&gt;next = 新头、新尾-&gt;next = nex，再令 pre = 新尾、head = pre-&gt;next。"
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "id": 42,
+  "slug": "trapping-rain-water",
+  "method": "方法三：双指针",
+  "solutionCode": "class Solution {\npublic:\n    int trap(vector<int>& height) {\n        int ans = 0;\n        int left = 0, right = height.size() - 1;\n        int leftMax = 0, rightMax = 0;\n        while (left < right) {\n            leftMax = max(leftMax, height[left]);\n            rightMax = max(rightMax, height[right]);\n            if (height[left] < height[right]) { // 哪侧矮结算哪侧：此时 left 处水量只由 leftMax 决定\n                ans += leftMax - height[left];\n                ++left;\n            } else {\n                ans += rightMax - height[right];\n                --right;\n            }\n        }\n        return ans;\n    }\n};",
+  "solutionText": "每列的水 = min(左右两侧最高) - 自身高度。双指针 left、right 相向而行并维护 leftMax、rightMax：当 height[left] < height[right] 时，left 处短板必是 leftMax（右边有更高的墙兜底），累加 leftMax - height[left] 并 left++，否则对称结算右侧。O(n) 时间、O(1) 空间。",
+  "hints": [
+    "题型是「按列接水」：每一列能接的水 = min(左边最高, 右边最高) - 当前高度，目标是省掉两个预处理数组。",
+    "双指针 left/right 相向而行，同时维护 leftMax/rightMax；关键不变量：当 height[left] &lt; height[right] 时，left 处的短板必是 leftMax。",
+    "while (left &lt; right)：先用两端高度更新 leftMax/rightMax，哪侧矮就结算哪侧（累加 xMax - height[x]），然后那侧指针向内移一步。"
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "id": 23,
+  "slug": "merge-k-sorted-lists",
+  "method": "方法二：分治合并",
+  "solutionCode": "class Solution {\npublic:\n    ListNode* mergeTwoLists(ListNode *a, ListNode *b) {\n        if ((!a) || (!b)) return a ? a : b;\n        ListNode head, *tail = &head, *aPtr = a, *bPtr = b;\n        while (aPtr && bPtr) {\n            if (aPtr->val < bPtr->val) {\n                tail->next = aPtr; aPtr = aPtr->next;\n            } else {\n                tail->next = bPtr; bPtr = bPtr->next;\n            }\n            tail = tail->next;\n        }\n        tail->next = (aPtr ? aPtr : bPtr);\n        return head.next;\n    }\n\n    ListNode* merge(vector <ListNode*> &lists, int l, int r) {\n        if (l == r) return lists[l];\n        if (l > r) return nullptr;\n        int mid = (l + r) >> 1; // 对半劈开两两合并，每条链只被合并 O(log k) 次\n        return mergeTwoLists(merge(lists, l, mid), merge(lists, mid + 1, r));\n    }\n\n    ListNode* mergeKLists(vector<ListNode*>& lists) {\n        return merge(lists, 0, lists.size() - 1);\n    }\n};",
+  "solutionText": "分治：merge(lists,l,r) 对半劈开，递归把左右两半各合成一条，再用双指针合并两条有序链表。每条链只参与 O(log k) 次合并，总时间 O(kn log k)，优于顺序合并。边界：l>r 返回空，l==r 返回 lists[l]。",
+  "hints": [
+    "题型是「k 路合并」：逐条顺序合并是 O(k²n)，想想怎么让每条链少被合并几次——归并排序式的两两配对。",
+    "核心是<strong>分治</strong>：merge(l, r) 取 mid 劈成两半，各自递归合并成一条，再调用你已会的「合并两个有序链表」（21 题）拼接，递归深度 O(log k)。",
+    "边界：l == r 返回 lists[l]，l &gt; r 返回 nullptr；mergeTwoLists 用哑结点 + tail 指针，谁小接谁，循环结束把剩余的一条整体挂上。"
+  ]
+}

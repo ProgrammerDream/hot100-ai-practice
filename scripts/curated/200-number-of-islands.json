@@ -1,0 +1,12 @@
+{
+  "id": 200,
+  "slug": "number-of-islands",
+  "method": "方法一：深度优先搜索",
+  "solutionCode": "class Solution {\nprivate:\n    void dfs(vector<vector<char>>& grid, int r, int c) {\n        int nr = grid.size();\n        int nc = grid[0].size();\n\n        grid[r][c] = '0'; // 访问即沉没，防止重复计数\n        if (r - 1 >= 0 && grid[r-1][c] == '1') dfs(grid, r - 1, c);\n        if (r + 1 < nr && grid[r+1][c] == '1') dfs(grid, r + 1, c);\n        if (c - 1 >= 0 && grid[r][c-1] == '1') dfs(grid, r, c - 1);\n        if (c + 1 < nc && grid[r][c+1] == '1') dfs(grid, r, c + 1);\n    }\n\npublic:\n    int numIslands(vector<vector<char>>& grid) {\n        int nr = grid.size();\n        if (!nr) return 0;\n        int nc = grid[0].size();\n\n        int num_islands = 0;\n        for (int r = 0; r < nr; ++r) {\n            for (int c = 0; c < nc; ++c) {\n                if (grid[r][c] == '1') {\n                    ++num_islands;\n                    dfs(grid, r, c);\n                }\n            }\n        }\n\n        return num_islands;\n    }\n};",
+  "solutionText": "双重循环扫描网格，遇到 '1' 就岛屿数加一，并从该点 DFS 把整片相连的 '1' 全部改成 '0'（沉岛），保证每座岛只被计一次。DFS 向上下左右四个方向递归，进入前判断边界与是否为 '1'。易错点：直接在原网格上标记，无需额外 visited 数组。",
+  "hints": [
+    "题型是「网格连通块计数」：数一数有多少片相连的 1，每发现一片新的就计数并把整片抹掉。",
+    "不需要额外 visited 数组：把访问过的 <code>'1'</code> 直接改成 <code>'0'</code>（沉岛），天然防止重复计数。",
+    "双重循环扫描，遇到 '1' 就岛屿数加一并调用 dfs(r, c)：先置 <code>grid[r][c]='0'</code>，再对上下左右四个仍是 '1' 的邻居递归。"
+  ]
+}

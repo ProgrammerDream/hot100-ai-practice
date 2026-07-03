@@ -1,0 +1,12 @@
+{
+  "id": 70,
+  "slug": "climbing-stairs",
+  "method": "方法一：动态规划",
+  "solutionCode": "class Solution {\npublic:\n    int climbStairs(int n) {\n        int p = 0, q = 0, r = 1;\n        for (int i = 1; i <= n; ++i) {\n            p = q;\n            q = r;\n            r = p + q; // 滚动递推：f(i) = f(i-1) + f(i-2)\n        }\n        return r;\n    }\n};",
+  "solutionText": "设 f(i) 为爬到第 i 阶的方案数，最后一步只能跨 1 或 2 阶，故 f(i)=f(i-1)+f(i-2)。只依赖前两项，用 p、q、r 三变量滚动代替数组，空间 O(1)。边界 f(0)=1、f(1)=1，循环 n 次后 r 即答案。",
+  "hints": [
+    "题型是「一维递推 DP」：走到第 i 阶只可能从第 i-1 或 i-2 阶跨上来，方案数满足斐波那契式递推。",
+    "设 <code>f(i)</code> 表示爬到第 i 阶的方案数；它只依赖前两项，可以不开数组，用三个 int 变量滚动。",
+    "转移：<code>f(i) = f(i-1) + f(i-2)</code>，边界 <code>f(0)=1, f(1)=1</code>。循环里依次 <code>p=q; q=r; r=p+q;</code>，执行 n 次后 r 就是答案。"
+  ]
+}

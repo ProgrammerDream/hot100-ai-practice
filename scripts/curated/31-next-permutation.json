@@ -1,0 +1,12 @@
+{
+  "id": 31,
+  "slug": "next-permutation",
+  "method": "方法一：两遍扫描",
+  "solutionCode": "class Solution {\npublic:\n    void nextPermutation(vector<int>& nums) {\n        int i = nums.size() - 2;\n        while (i >= 0 && nums[i] >= nums[i + 1]) { // 从后往前找第一个升序对 nums[i] < nums[i+1]\n            i--;\n        }\n        if (i >= 0) {\n            int j = nums.size() - 1;\n            while (j >= 0 && nums[i] >= nums[j]) { // 在降序后缀里找第一个比 nums[i] 大的数\n                j--;\n            }\n            swap(nums[i], nums[j]);\n        }\n        reverse(nums.begin() + i + 1, nums.end()); // 降序后缀反转成升序，保证增量最小\n    }\n};",
+  "solutionText": "两遍扫描。先从后往前找第一个升序对 nums[i]<nums[i+1]，i 右边是一段降序后缀；再从后往前在后缀里找第一个大于 nums[i] 的数与之交换（交换后后缀仍降序）；最后把 i 之后的后缀整体反转成升序，使排列增大得最少。若整个数组降序（i<0），跳过交换直接反转，得到最小排列。",
+  "hints": [
+    "题型是「构造下一个字典序」：目标是让排列\"变大但变大得最少\"——在尽量靠右的位置，用一个刚好更大的数替换。",
+    "从后往前找第一个满足 nums[i] &lt; nums[i+1] 的下标 i：i 右边是降序后缀，已是这段的最大排列，必须动 nums[i] 才能变大。",
+    "再从后往前找第一个大于 nums[i] 的 nums[j]，swap 后后缀仍保持降序，最后 <code>reverse(nums.begin()+i+1, nums.end())</code> 把后缀变成最小升序；若 i&lt;0（整体降序）则直接整段反转。"
+  ]
+}

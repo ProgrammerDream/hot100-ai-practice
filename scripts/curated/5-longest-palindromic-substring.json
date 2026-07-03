@@ -1,0 +1,12 @@
+{
+  "id": 5,
+  "slug": "longest-palindromic-substring",
+  "method": "方法二：中心扩展算法",
+  "solutionCode": "class Solution {\npublic:\n    pair<int, int> expandAroundCenter(const string& s, int left, int right) {\n        while (left >= 0 && right < s.size() && s[left] == s[right]) {\n            --left;\n            ++right;\n        }\n        return {left + 1, right - 1}; // 退出时多扩了一步，往回收一格才是回文边界\n    }\n\n    string longestPalindrome(string s) {\n        int start = 0, end = 0;\n        for (int i = 0; i < s.size(); ++i) {\n            auto [left1, right1] = expandAroundCenter(s, i, i);     // 奇数长度：单字符中心\n            auto [left2, right2] = expandAroundCenter(s, i, i + 1); // 偶数长度：双字符中心\n            if (right1 - left1 > end - start) {\n                start = left1;\n                end = right1;\n            }\n            if (right2 - left2 > end - start) {\n                start = left2;\n                end = right2;\n            }\n        }\n        return s.substr(start, end - start + 1);\n    }\n};",
+  "solutionText": "枚举回文中心向两侧扩展：每个位置各做一次「单字符中心」（奇数长度）和「双字符中心」（偶数长度）扩展，扩到两端字符不等或越界为止，维护当前最长回文的起止下标。易错点：偶数中心是 (i, i+1)，漏掉它会错过 \"abba\" 这类偶数长度回文。",
+  "hints": [
+    "题型是「回文中心扩展」：回文由中心唯一决定，枚举每个中心同时向两边扩，比二维 DP 好写且只用 O(1) 空间。",
+    "中心分两类：奇数长度中心 (i, i) 和偶数长度中心 (i, i+1)，长度 n 的串共 2n-1 个中心，一个都不能漏。",
+    "写辅助函数 expandAroundCenter(s, left, right)：while 中 --left、++right 直到字符不等或越界，返回 {left+1, right-1}；主循环对两类中心各扩一次，用返回区间更新最长的 [start, end]。"
+  ]
+}

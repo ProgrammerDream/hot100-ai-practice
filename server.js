@@ -27,6 +27,15 @@ const server = http.createServer((req, res) => {
     res.end(fs.readFileSync(INDEX_FILE));
     return;
   }
+  // 题库构建产物；没构建过（文件不存在）时 404，前端自动兜底内嵌样例题
+  if (req.method === 'GET' && url === '/problems.js') {
+    let js = null;
+    try { js = fs.readFileSync(path.join(__dirname, 'problems.js')); } catch (e) { /* 未构建 */ }
+    if (js == null) { res.writeHead(404); res.end(); return; }
+    res.writeHead(200, { 'Content-Type': 'text/javascript; charset=utf-8' });
+    res.end(js);
+    return;
+  }
   if (req.method === 'GET' && url === '/api/state') {
     res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8' });
     res.end(readState());

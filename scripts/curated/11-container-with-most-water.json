@@ -1,0 +1,12 @@
+{
+  "id": 11,
+  "slug": "container-with-most-water",
+  "method": "方法一：双指针",
+  "solutionCode": "class Solution {\npublic:\n    int maxArea(vector<int>& height) {\n        int l = 0, r = height.size() - 1;\n        int ans = 0;\n        while (l < r) {\n            int area = min(height[l], height[r]) * (r - l);\n            ans = max(ans, area);\n            if (height[l] <= height[r]) { // 移动较矮的一侧，面积才可能变大\n                ++l;\n            }\n            else {\n                --r;\n            }\n        }\n        return ans;\n    }\n};",
+  "solutionText": "左右指针从两端相向收缩：每步先用 min(height[l], height[r]) × (r-l) 更新答案，再移动较矮一侧的指针。理由：容量由短板决定，若移动较高一侧，宽度变小而短板不可能变高，面积必不增，所以舍弃这些状态不会漏掉最优解；两侧相等时移哪边都行。",
+  "hints": [
+    "题型是「双指针贪心」：从最宽的两端开始，每次收缩一侧指针，O(n) 内找最大面积。",
+    "面积 = min(height[l], height[r]) × (r - l)，由<strong>短板</strong>决定；关键结论：只有移动较矮的一侧，面积才可能变大。",
+    "while (l &lt; r)：先算当前面积更新 ans，再比较两端高度，height[l] &lt;= height[r] 就 ++l，否则 --r。"
+  ]
+}

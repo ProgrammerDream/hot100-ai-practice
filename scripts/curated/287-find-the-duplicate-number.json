@@ -1,0 +1,12 @@
+{
+  "id": 287,
+  "slug": "find-the-duplicate-number",
+  "method": "方法三：快慢指针",
+  "solutionCode": "class Solution {\npublic:\n    int findDuplicate(vector<int>& nums) {\n        // 把下标 i -> nums[i] 看作链表的 next 指针，重复数即环的入口\n        int slow = 0, fast = 0;\n        do {\n            slow = nums[slow];\n            fast = nums[nums[fast]]; // 快指针每次走两步\n        } while (slow != fast);\n        slow = 0;\n        while (slow != fast) { // 第二阶段：同速前进，相遇点就是环入口\n            slow = nums[slow];\n            fast = nums[fast];\n        }\n        return slow;\n    }\n};",
+  "solutionText": "快慢指针（Floyd 判环）。把下标 i 到 nums[i] 看作链表的 next 指针：因为存在重复数，必有两个下标指向同一节点，链表必然成环，环入口就是重复数。第一阶段 slow 走一步、fast 走两步直到相遇；第二阶段把 slow 放回 0，两指针同速前进，再次相遇处即答案。全程不修改数组、O(1) 空间。",
+  "hints": [
+    "题型是「隐式链表判环」：不许修改数组、只能用 O(1) 空间，把\"长度 n+1、值域 1..n\"的数组翻译成链表结构来想。",
+    "建图方式：每个下标 i 连一条边 i → nums[i]；存在重复数意味着有两个下标指向同一个节点，链表必然有环，且<strong>环的入口就是重复的数</strong>。",
+    "Floyd 两阶段：先 slow=nums[slow]、fast=nums[nums[fast]] 走到相遇；再把 slow 置回 0，两指针每次各走一步 slow=nums[slow]、fast=nums[fast]，再次相遇的位置即答案。"
+  ]
+}

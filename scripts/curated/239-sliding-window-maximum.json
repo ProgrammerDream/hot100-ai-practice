@@ -1,0 +1,12 @@
+{
+  "id": 239,
+  "slug": "sliding-window-maximum",
+  "method": "方法二：单调队列",
+  "solutionCode": "class Solution {\npublic:\n    vector<int> maxSlidingWindow(vector<int>& nums, int k) {\n        int n = nums.size();\n        deque<int> q;\n        for (int i = 0; i < k; ++i) {\n            while (!q.empty() && nums[i] >= nums[q.back()]) { // 弹掉队尾更小的元素，保持队列单调递减\n                q.pop_back();\n            }\n            q.push_back(i);\n        }\n\n        vector<int> ans = {nums[q.front()]};\n        for (int i = k; i < n; ++i) {\n            while (!q.empty() && nums[i] >= nums[q.back()]) {\n                q.pop_back();\n            }\n            q.push_back(i);\n            while (q.front() <= i - k) { // 队首下标已滑出窗口左边界则弹出\n                q.pop_front();\n            }\n            ans.push_back(nums[q.front()]);\n        }\n        return ans;\n    }\n};",
+  "solutionText": "用存下标的单调递减双端队列维护窗口最大值：新元素入队前先把队尾所有小于等于它的下标弹掉，保证队首始终是当前窗口最大值的下标；窗口右移后若队首下标不大于 i-k 说明已出窗，弹队首。注意队列必须存下标而非值，否则无法判断元素是否滑出窗口。",
+  "hints": [
+    "题型是「滑动窗口求最值」：暴力对每个窗口扫一遍是 O(nk)，想办法让窗口滑动时旧信息可复用，均摊 O(1) 拿到最大值。",
+    "用 deque&lt;int&gt; 维护一个<strong>单调递减</strong>队列，存的是<strong>下标</strong>不是值：队首永远是当前窗口最大值的下标，存下标才能判断它是否已滑出窗口。",
+    "新元素 nums[i] 入队前，先从队尾弹掉所有 nums[q.back()] &lt;= nums[i] 的下标（它们不可能再当最大值）；入队后若 q.front() &lt;= i - k 就弹队首，此时 nums[q.front()] 即本窗口答案。"
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "id": 226,
+  "slug": "invert-binary-tree",
+  "method": "方法一：递归",
+  "solutionCode": "class Solution {\npublic:\n    TreeNode* invertTree(TreeNode* root) {\n        if (root == nullptr) {\n            return nullptr;\n        }\n        TreeNode* left = invertTree(root->left); // 先递归翻转两棵子树，再交换挂回当前节点\n        TreeNode* right = invertTree(root->right);\n        root->left = right;\n        root->right = left;\n        return root;\n    }\n};",
+  "solutionText": "自底向上递归：先递归翻转左右子树拿到新的子树根，再交换挂到当前节点的 right/left，返回 root；空节点返回 nullptr 作为出口。易错：先用临时变量接住两个递归结果再交换，直接覆盖 root->left 会丢掉左子树。",
+  "hints": [
+    "题型是「树的递归」：翻转整棵树 = 先翻转左右两棵子树，再把它们左右互换。",
+    "每个节点只做一件事：交换自己的 left 和 right 指针；子树内部的翻转交给递归完成，空节点直接返回。",
+    "先 <code>left = invertTree(root-&gt;left)</code>、<code>right = invertTree(root-&gt;right)</code> 接住翻转结果，再 root-&gt;left = right、root-&gt;right = left，最后返回 root。"
+  ]
+}

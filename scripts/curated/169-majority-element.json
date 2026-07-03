@@ -1,0 +1,12 @@
+{
+  "id": 169,
+  "slug": "majority-element",
+  "method": "方法五：Boyer-Moore 投票算法",
+  "solutionCode": "class Solution {\npublic:\n    int majorityElement(vector<int>& nums) {\n        int candidate = -1; // 当前候选人\n        int count = 0;      // 候选人的净票数\n        for (int num : nums) {\n            if (num == candidate)\n                ++count;\n            else if (--count < 0) { // 票数被抵消耗尽，换当前元素当候选人\n                candidate = num;\n                count = 1;\n            }\n        }\n        return candidate;\n    }\n};",
+  "solutionText": "Boyer-Moore 投票。维护候选人 candidate 和净票数 count：遇到相同元素加一票，不同元素减一票，票数减到负数就换当前元素当候选人并把 count 重置为 1。因为多数元素超过一半，怎么抵消都会剩下它。注意该结论依赖「多数元素一定存在」的题设，否则最后还需再验证一遍。",
+  "hints": [
+    "题型是「投票抵消」：多数元素个数超过一半，让不同的数互相\"同归于尽\"，最后站着的一定是它——O(n) 时间、O(1) 空间。",
+    "维护两个变量：candidate（当前候选人）和 count（净票数）；直觉不变量：被抵消掉的元素两两不同，多数元素抵不完。",
+    "遍历规则：num==candidate 时 ++count；否则 --count，一旦 count 减到小于 0，就把 candidate 换成当前 num 且 count=1；扫完返回 candidate。"
+  ]
+}

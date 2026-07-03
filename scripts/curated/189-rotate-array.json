@@ -1,0 +1,12 @@
+{
+  "id": 189,
+  "slug": "rotate-array",
+  "method": "方法三：数组翻转",
+  "solutionCode": "class Solution {\npublic:\n    void reverse(vector<int>& nums, int start, int end) {\n        while (start < end) {\n            swap(nums[start], nums[end]);\n            start += 1;\n            end -= 1;\n        }\n    }\n\n    void rotate(vector<int>& nums, int k) {\n        k %= nums.size(); // k 可能大于 n，先取模\n        reverse(nums, 0, nums.size() - 1); // 整体翻转后，再把前 k 个与后 n-k 个各自翻回\n        reverse(nums, 0, k - 1);\n        reverse(nums, k, nums.size() - 1);\n    }\n};",
+  "solutionText": "三次翻转原地完成轮转：先整体翻转数组，此时后 k 个元素被搬到了开头但段内顺序反了；再分别翻转前 k 个和后 n-k 个元素，把两段顺序恢复。翻转本身用双指针首尾交换。易错点：k 可能大于 n，必须先 k %= n。时间 O(n)，空间 O(1)。",
+  "hints": [
+    "题型是「原地数组变换」：不开辅助数组，找一个既能整体搬运又能恢复段内顺序的基本操作。",
+    "关键操作是<strong>翻转</strong>（双指针首尾 swap）：整体翻转能把后 k 个搬到前面，代价是两段内部顺序也反了——那就再各自翻一次。",
+    "三步走：k %= n 后，先 reverse(0, n-1) 整体翻转，再 reverse(0, k-1) 翻回前 k 个，最后 reverse(k, n-1) 翻回后 n-k 个。"
+  ]
+}

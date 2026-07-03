@@ -1,0 +1,12 @@
+{
+  "id": 17,
+  "slug": "letter-combinations-of-a-phone-number",
+  "method": "方法一：回溯",
+  "solutionCode": "class Solution {\npublic:\n    vector<string> letterCombinations(string digits) {\n        vector<string> combinations;\n        if (digits.empty()) {\n            return combinations;\n        }\n        unordered_map<char, string> phoneMap{\n            {'2', \"abc\"},\n            {'3', \"def\"},\n            {'4', \"ghi\"},\n            {'5', \"jkl\"},\n            {'6', \"mno\"},\n            {'7', \"pqrs\"},\n            {'8', \"tuv\"},\n            {'9', \"wxyz\"}\n        };\n        string combination;\n        backtrack(combinations, phoneMap, digits, 0, combination);\n        return combinations;\n    }\n\n    void backtrack(vector<string>& combinations, const unordered_map<char, string>& phoneMap, const string& digits, int index, string& combination) {\n        if (index == digits.length()) {\n            combinations.push_back(combination);\n        } else {\n            char digit = digits[index];\n            const string& letters = phoneMap.at(digit);\n            for (const char& letter: letters) {\n                combination.push_back(letter);\n                backtrack(combinations, phoneMap, digits, index + 1, combination);\n                combination.pop_back(); // 撤销本层选择\n            }\n        }\n    }\n};",
+  "solutionText": "回溯逐位拼字母：先建数字到字母串的映射表，backtrack(index) 处理第 index 个数字，枚举它对应的每个字母——压入当前组合、递归下一位、再弹出撤销。index 走到末尾就收录一个完整组合。易错点：digits 为空要直接返回空数组，而不是含空串的数组。",
+  "hints": [
+    "题型是「组合型回溯（笛卡尔积）」：每个数字对应一组字母，逐位枚举并拼接出所有可能。",
+    "先建 <code>unordered_map&lt;char, string&gt;</code> 映射（'2'→\"abc\"…），再用一个 string 作为可增删的当前路径。",
+    "backtrack(index)：index==digits.length() 时收录答案；否则取该数字的字母串，对每个字母：push_back → 递归 index+1 → pop_back 撤销。"
+  ]
+}

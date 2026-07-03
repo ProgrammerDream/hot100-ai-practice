@@ -1,0 +1,12 @@
+{
+  "id": 22,
+  "slug": "generate-parentheses",
+  "method": "方法二：回溯法",
+  "solutionCode": "class Solution {\n    void backtrack(vector<string>& ans, string& cur, int open, int close, int n) {\n        if (cur.size() == n * 2) {\n            ans.push_back(cur);\n            return;\n        }\n        if (open < n) {\n            cur.push_back('(');\n            backtrack(ans, cur, open + 1, close, n);\n            cur.pop_back();\n        }\n        if (close < open) { // 右括号不能多于左括号，保证前缀合法\n            cur.push_back(')');\n            backtrack(ans, cur, open, close + 1, n);\n            cur.pop_back();\n        }\n    }\npublic:\n    vector<string> generateParenthesis(int n) {\n        vector<string> result;\n        string current;\n        backtrack(result, current, 0, 0, n);\n        return result;\n    }\n};",
+  "solutionText": "回溯时维护已放的左括号数 open 与右括号数 close：open 小于 n 时才能放左括号，close 小于 open 时才能放右括号——这个不变量保证任意前缀合法。串长到 2n 时收录答案，每放一个字符递归后要 pop_back 撤销。相比先生成再验证的暴力法，剪掉了全部无效分支。",
+  "hints": [
+    "题型是「构造型回溯」：逐字符构造长度 2n 的括号串，只在保证仍能合法的前提下才放字符。",
+    "关键不变量：任意时刻<strong>右括号数不能超过左括号数</strong>，且左括号总数不超过 n；只需带着 open、close 两个计数递归。",
+    "backtrack：串长==2n 时收录答案；若 open&lt;n，放 '(' 递归再撤销；若 close&lt;open，放 ')' 递归再撤销。"
+  ]
+}

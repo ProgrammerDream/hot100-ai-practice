@@ -1,0 +1,12 @@
+{
+  "id": 41,
+  "slug": "first-missing-positive",
+  "method": "方法一：哈希表",
+  "solutionCode": "class Solution {\npublic:\n    int firstMissingPositive(vector<int>& nums) {\n        int n = nums.size();\n        for (int& num: nums) {\n            if (num <= 0) {\n                num = n + 1; // 非正数改成 n+1，使其不参与后续标记\n            }\n        }\n        for (int i = 0; i < n; ++i) {\n            int num = abs(nums[i]);\n            if (num <= n) {\n                nums[num - 1] = -abs(nums[num - 1]); // 值 num 出现过：给下标 num-1 处打负号标记\n            }\n        }\n        for (int i = 0; i < n; ++i) {\n            if (nums[i] > 0) {\n                return i + 1; // 第一个仍为正的位置，说明 i+1 未出现\n            }\n        }\n        return n + 1;\n    }\n};",
+  "solutionText": "把数组自身当哈希表：答案必在 [1, n+1]。先把非正数全改成 n+1；再对每个绝对值 num≤n 的数，把下标 num-1 处打负号表示 num 出现过；最后第一个仍为正的位置 i 对应缺失的 i+1，全负返回 n+1。易错：取值须用 abs。",
+  "hints": [
+    "题型是「原地哈希」：答案一定落在 [1, n+1] 区间内，要求 O(1) 空间，就把数组本身当哈希表用。",
+    "用元素的<strong>符号</strong>做标记：先把所有 &lt;= 0 的数改成 n+1 排除干扰，之后「下标 x-1 处为负」就代表「正整数 x 出现过」。",
+    "第二趟对每个 num = abs(nums[i])，若 num &lt;= n 就置 nums[num-1] = -abs(nums[num-1])；第三趟找第一个仍为正的下标 i 返回 i+1，全为负则返回 n+1。"
+  ]
+}

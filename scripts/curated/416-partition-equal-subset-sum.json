@@ -1,0 +1,12 @@
+{
+  "id": 416,
+  "slug": "partition-equal-subset-sum",
+  "method": "方法一：动态规划",
+  "solutionCode": "class Solution {\npublic:\n    bool canPartition(vector<int>& nums) {\n        int n = nums.size();\n        if (n < 2) {\n            return false;\n        }\n        int sum = 0, maxNum = 0;\n        for (auto& num : nums) {\n            sum += num;\n            maxNum = max(maxNum, num);\n        }\n        if (sum & 1) {\n            return false;\n        }\n        int target = sum / 2;\n        if (maxNum > target) {\n            return false;\n        }\n        vector<int> dp(target + 1, 0);\n        dp[0] = true;\n        for (int i = 0; i < n; i++) {\n            int num = nums[i];\n            for (int j = target; j >= num; --j) { // 01 背包：容量倒序，保证每个数只用一次\n                dp[j] |= dp[j - num]; // 不选 num（dp[j]）或选 num（dp[j-num]）\n            }\n        }\n        return dp[target];\n    }\n};",
+  "solutionText": "01 背包：总和为奇数直接 false，否则求能否凑出 target=sum/2。dp[j] 表示能否选若干数凑出和 j；对每个 num，j 从 target 倒序到 num：dp[j] |= dp[j-num]，倒序保证每数只用一次。dp[0]=true。",
+  "hints": [
+    "题型是「01 背包（可行性）」：能否选出一个子集使和恰好等于总和的一半；总和为奇数可以直接判否。",
+    "设 <code>dp[j]</code> 表示能否从数组中选若干个数（每个至多用一次）凑出和 j，目标是 dp[sum/2]。",
+    "转移：对每个 num，容量 j 从 target <strong>倒序</strong>循环到 num：<code>dp[j] |= dp[j - num]</code>，倒序才能保证每个数只用一次；初始 <code>dp[0]=true</code>。"
+  ]
+}

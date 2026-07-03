@@ -9,3 +9,6 @@ hot100.state.json.tmp
 *.mp3
 原文_*.txt
 纪要_*.txt
+
+# 题库抓取缓存（可随时用 fetch-problems.js 重抓）；加工产物 curated/ 与 problems.js 入库
+scripts/raw/

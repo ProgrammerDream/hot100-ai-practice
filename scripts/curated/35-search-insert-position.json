@@ -1,0 +1,12 @@
+{
+  "id": 35,
+  "slug": "search-insert-position",
+  "method": "方法一：二分查找",
+  "solutionCode": "class Solution {\npublic:\n    int searchInsert(vector<int>& nums, int target) {\n        int n = nums.size();\n        int left = 0, right = n - 1, ans = n; // ans 初值 n：全部元素都小于 target 时插在末尾\n        while (left <= right) {\n            int mid = ((right - left) >> 1) + left;\n            if (target <= nums[mid]) { // 找第一个 >= target 的位置：满足就记下并继续向左\n                ans = mid;\n                right = mid - 1;\n            } else {\n                left = mid + 1;\n            }\n        }\n        return ans;\n    }\n};",
+  "solutionText": "标准闭区间二分，找「第一个 >= target 的下标」：ans 初值为 n，target <= nums[mid] 时记 ans = mid 并 right = mid - 1，否则 left = mid + 1。易错点：判断必须带等号，目标存在时才返回原下标。",
+  "hints": [
+    "题型是「二分查找」：目标存在返回其下标、不存在返回插入位置，两者其实是同一个答案——第一个 &gt;= target 的下标。",
+    "闭区间 [left, right] 上二分，循环条件 left &lt;= right；另设 ans 初值为 n（表示都比 target 小、插在末尾），每次满足条件就更新它。",
+    "当 target &lt;= nums[mid] 时说明 mid 是候选答案：记 ans = mid 并 right = mid - 1 继续向左收缩；否则 left = mid + 1。最后返回 ans。"
+  ]
+}

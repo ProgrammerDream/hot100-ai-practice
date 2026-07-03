@@ -1,0 +1,12 @@
+{
+  "id": 32,
+  "slug": "longest-valid-parentheses",
+  "method": "方法一：动态规划",
+  "solutionCode": "class Solution {\npublic:\n    int longestValidParentheses(string s) {\n        int maxans = 0, n = s.length();\n        vector<int> dp(n, 0);\n        for (int i = 1; i < n; i++) {\n            if (s[i] == ')') {\n                if (s[i - 1] == '(') {\n                    dp[i] = (i >= 2 ? dp[i - 2] : 0) + 2; // 情况 \"...()\"\n                } else if (i - dp[i - 1] > 0 && s[i - dp[i - 1] - 1] == '(') {\n                    dp[i] = dp[i - 1] + ((i - dp[i - 1]) >= 2 ? dp[i - dp[i - 1] - 2] : 0) + 2; // 情况 \"...))\"：跨过内层有效段 dp[i-1] 找配对的 '('\n                }\n                maxans = max(maxans, dp[i]);\n            }\n        }\n        return maxans;\n    }\n};",
+  "solutionText": "dp[i] 表示以 s[i] 结尾的最长有效括号长度，仅 ')' 可能非零：前一位是 '(' 时 dp[i]=dp[i-2]+2；前一位是 ')' 时若跨过 dp[i-1] 段之前是 '('，则两段 dp 相加再加 2。越界按 0 处理，答案取最大 dp。",
+  "hints": [
+    "题型是「以结尾为状态的线性 DP」：有效括号子串一定以 ')' 结尾，考虑每个 ')' 能向左延伸出多长的有效段。",
+    "设 <code>dp[i]</code> 表示以 s[i] 结尾的最长有效括号长度；s[i] 是 '(' 时 dp[i] 恒为 0。",
+    "s[i]==')' 分两种：前一位是 '(' 则 <code>dp[i]=dp[i-2]+2</code>；前一位是 ')' 则看 <code>s[i-dp[i-1]-1]</code> 是否为 '('，是则 <code>dp[i] = dp[i-1] + dp[i-dp[i-1]-2] + 2</code>；越界下标一律按 0 处理，答案取最大的 dp[i]。"
+  ]
+}

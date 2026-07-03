@@ -1,0 +1,12 @@
+{
+  "id": 236,
+  "slug": "lowest-common-ancestor-of-a-binary-tree",
+  "method": "方法一：递归",
+  "solutionCode": "class Solution {\npublic:\n    TreeNode* ans;\n    bool dfs(TreeNode* root, TreeNode* p, TreeNode* q) {\n        if (root == nullptr) return false;\n        bool lson = dfs(root->left, p, q);\n        bool rson = dfs(root->right, p, q);\n        if ((lson && rson) || ((root->val == p->val || root->val == q->val) && (lson || rson))) {\n            ans = root; // p、q 分居两侧，或自身即是其一：root 就是最近公共祖先\n        }\n        return lson || rson || (root->val == p->val || root->val == q->val); // 返回：该子树是否包含 p 或 q\n    }\n    TreeNode* lowestCommonAncestor(TreeNode* root, TreeNode* p, TreeNode* q) {\n        dfs(root, p, q);\n        return ans;\n    }\n};",
+  "solutionText": "后序递归。dfs 返回「该子树是否包含 p 或 q」，回溯时判定：左右子树各含其一，或当前节点自身是 p/q 且另一个在某侧子树里，则当前节点就是最近公共祖先，记入全局 ans。判定在最深处最先成立，之后祖先不会再满足条件，ans 不会被覆盖。",
+  "hints": [
+    "题型是「树上递归 + 后序汇总」：最近公共祖先就是第一个把 p、q 分到两边（或自己就是其中之一且另一个在子树里）的节点，信息要自底向上汇总。",
+    "让 dfs(root) 返回布尔值：<strong>该子树里是否含 p 或 q</strong>；答案不靠返回值上传，而是在回溯判定成立时记进全局变量 ans。",
+    "判定：(lson &amp;&amp; rson) 成立，或 root 自身是 p/q 且 (lson || rson) 成立时令 ans = root；返回 lson || rson || root 是否为 p/q。最深处最先满足，ans 不会被祖先覆盖。"
+  ]
+}

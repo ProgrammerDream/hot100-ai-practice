@@ -1,0 +1,12 @@
+{
+  "id": 142,
+  "slug": "linked-list-cycle-ii",
+  "method": "方法二：快慢指针",
+  "solutionCode": "class Solution {\npublic:\n    ListNode *detectCycle(ListNode *head) {\n        ListNode *slow = head, *fast = head;\n        while (fast != nullptr) {\n            slow = slow->next;\n            if (fast->next == nullptr) {\n                return nullptr;\n            }\n            fast = fast->next->next;\n            if (fast == slow) {\n                ListNode *ptr = head; // 相遇后：从头出发的指针与 slow 同速走，恰在入环口相遇\n                while (ptr != slow) {\n                    ptr = ptr->next;\n                    slow = slow->next;\n                }\n                return ptr;\n            }\n        }\n        return nullptr;\n    }\n};",
+  "solutionText": "快慢指针两阶段：先让 slow 一步、fast 两步，相遇说明有环；再派指针 ptr 从 head 出发，与 slow 同速前进，二者相遇点就是入环口。原理是头到入环口的距离 a 恰等于相遇点沿环走回入环口的距离 c 加上若干整圈。fast 走到空指针说明无环，返回 nullptr。",
+  "hints": [
+    "题型是「链表找环入口」：先用快慢指针确认有环，再利用相遇位置的数学性质定位入环点，不用哈希表。",
+    "关键结论：slow 与 fast 相遇后，从 head 和从相遇点各派一个<strong>同速</strong>指针，它们恰好在入环口相遇（a = c + (n-1)(b+c)）。",
+    "第一阶段 while (fast != nullptr) 内 slow 走 1 步、fast 走 2 步；当 fast == slow 时，令 ListNode *ptr = head，ptr 与 slow 同步前进直到相等，返回 ptr 即入环口。"
+  ]
+}

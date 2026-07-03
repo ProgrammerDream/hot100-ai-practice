@@ -1,0 +1,12 @@
+{
+  "id": 234,
+  "slug": "palindrome-linked-list",
+  "method": "方法三：快慢指针",
+  "solutionCode": "class Solution {\npublic:\n    bool isPalindrome(ListNode* head) {\n        if (head == nullptr) {\n            return true;\n        }\n\n        // 找到前半部分链表的尾节点并反转后半部分链表\n        ListNode* firstHalfEnd = endOfFirstHalf(head);\n        ListNode* secondHalfStart = reverseList(firstHalfEnd->next);\n\n        // 判断是否回文\n        ListNode* p1 = head;\n        ListNode* p2 = secondHalfStart;\n        bool result = true;\n        while (result && p2 != nullptr) {\n            if (p1->val != p2->val) {\n                result = false;\n            }\n            p1 = p1->next;\n            p2 = p2->next;\n        }\n\n        // 还原链表并返回结果\n        firstHalfEnd->next = reverseList(secondHalfStart);\n        return result;\n    }\n\n    ListNode* reverseList(ListNode* head) {\n        ListNode* prev = nullptr;\n        ListNode* curr = head;\n        while (curr != nullptr) {\n            ListNode* nextTemp = curr->next;\n            curr->next = prev;\n            prev = curr;\n            curr = nextTemp;\n        }\n        return prev;\n    }\n\n    ListNode* endOfFirstHalf(ListNode* head) {\n        ListNode* fast = head;\n        ListNode* slow = head;\n        while (fast->next != nullptr && fast->next->next != nullptr) {\n            fast = fast->next->next;\n            slow = slow->next;\n        }\n        return slow;\n    }\n};",
+  "solutionText": "O(1) 空间做法：先用快慢指针找到前半段尾节点（fast 两步、slow 一步），反转后半段，再从两头同步比较节点值，比较完把后半段反转回去还原链表。注意 fast 的循环条件是 fast->next 与 fast->next->next 都非空，这样奇数长度时中间节点留在前半段、不参与比较。",
+  "hints": [
+    "题型是「链表回文判断」：想做到 O(1) 空间，就把链表的后一半原地反转，再与前一半逐节点比较。",
+    "用快慢指针定位中点：fast 每次两步、slow 一步，fast 到尾时 slow 停在<strong>前半段尾节点</strong>；后半段用 206 题的迭代法反转。",
+    "反转 slow-&gt;next 开始的后半段得到 secondHalfStart；p1 从 head、p2 从 secondHalfStart 同步比较 val，p2 走完仍全相等即回文。最后再反转一次后半段接回去，恢复原链表。"
+  ]
+}

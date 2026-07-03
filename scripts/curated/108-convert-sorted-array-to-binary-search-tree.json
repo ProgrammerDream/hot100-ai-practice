@@ -1,0 +1,12 @@
+{
+  "id": 108,
+  "slug": "convert-sorted-array-to-binary-search-tree",
+  "method": "方法一：中序遍历，总是选择中间位置左边的数字作为根节点",
+  "solutionCode": "class Solution {\npublic:\n    TreeNode* sortedArrayToBST(vector<int>& nums) {\n        return helper(nums, 0, nums.size() - 1);\n    }\n\n    TreeNode* helper(vector<int>& nums, int left, int right) {\n        if (left > right) {\n            return nullptr;\n        }\n\n        // 总是选择中间位置左边的数字作为根节点\n        int mid = (left + right) / 2;\n\n        TreeNode* root = new TreeNode(nums[mid]);\n        root->left = helper(nums, left, mid - 1);\n        root->right = helper(nums, mid + 1, right);\n        return root;\n    }\n};",
+  "solutionText": "分治递归。有序数组就是 BST 的中序遍历，每次取区间中间偏左位置 mid=(left+right)/2 的数作根，左半段递归建左子树、右半段建右子树，left>right 时返回空指针。固定取中间偏左保证结果确定，左右子树节点数最多差 1，高度平衡。",
+  "hints": [
+    "题型是「分治建树」：有序数组正是 BST 的中序遍历结果，问自己\"选哪个元素当根，两边才一样多\"。",
+    "每次取区间<strong>中间位置</strong>的数作根：左半段递归建左子树、右半段建右子树，树高自然是 O(log n)。",
+    "写 <code>helper(nums, left, right)</code>：left &gt; right 返回 nullptr；mid = (left + right) / 2 建根，左右子树分别递归 [left, mid-1] 和 [mid+1, right]。"
+  ]
+}

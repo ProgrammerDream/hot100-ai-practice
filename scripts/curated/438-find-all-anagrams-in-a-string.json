@@ -1,0 +1,12 @@
+{
+  "id": 438,
+  "slug": "find-all-anagrams-in-a-string",
+  "method": "方法一：滑动窗口",
+  "solutionCode": "class Solution {\npublic:\n    vector<int> findAnagrams(string s, string p) {\n        int sLen = s.size(), pLen = p.size();\n\n        if (sLen < pLen) {\n            return vector<int>();\n        }\n\n        vector<int> ans;\n        vector<int> sCount(26);\n        vector<int> pCount(26);\n        for (int i = 0; i < pLen; ++i) {\n            ++sCount[s[i] - 'a'];\n            ++pCount[p[i] - 'a'];\n        }\n\n        if (sCount == pCount) {\n            ans.emplace_back(0);\n        }\n\n        for (int i = 0; i < sLen - pLen; ++i) {\n            --sCount[s[i] - 'a'];          // 窗口右移一格：左端字符移出\n            ++sCount[s[i + pLen] - 'a'];   // 右端字符移入\n            if (sCount == pCount) {\n                ans.emplace_back(i + 1);\n            }\n        }\n\n        return ans;\n    }\n};",
+  "solutionText": "异位词长度固定，用长为 p.size() 的定长滑动窗口。先统计 p 的 26 维字母计数 pCount 和 s 前 pLen 个字符的 sCount，相等则 0 计入答案；之后窗口每右移一格，左端字符计数减一、右端加一，再比较两数组，相等就记录起点 i+1。易错点：s 比 p 短时要先返回空。",
+  "hints": [
+    "题型是「定长滑动窗口」：异位词的长度固定等于 p.size()，窗口逐格滑动、比较字符构成是否一致。",
+    "用两个 vector&lt;int&gt;(26) 分别统计 p 和当前窗口的字母频次，vector 可以直接用 == 整体比较。",
+    "先统计前 pLen 个字符并判一次起点 0；此后每滑一格执行 --sCount[s[i]-'a'] 和 ++sCount[s[i+pLen]-'a']，若 sCount == pCount 就把 i+1 收入答案。"
+  ]
+}

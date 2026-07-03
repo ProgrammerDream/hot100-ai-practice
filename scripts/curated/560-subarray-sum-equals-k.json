@@ -1,0 +1,12 @@
+{
+  "id": 560,
+  "slug": "subarray-sum-equals-k",
+  "method": "方法二：前缀和 + 哈希表优化",
+  "solutionCode": "class Solution {\npublic:\n    int subarraySum(vector<int>& nums, int k) {\n        unordered_map<int, int> mp;\n        mp[0] = 1; // 前缀和 0 出现 1 次，兜住从下标 0 开始的子数组\n        int count = 0, pre = 0;\n        for (auto& x: nums) {\n            pre += x;\n            if (mp.find(pre - k) != mp.end()) { // 先查后存，k=0 时不会把自己算进去\n                count += mp[pre - k];\n            }\n            mp[pre]++;\n        }\n        return count;\n    }\n};",
+  "solutionText": "前缀和 + 哈希表一次遍历。子数组和为 k 等价于两个前缀和之差为 k：边走边把表中 pre-k 的出现次数累加进答案，再把当前 pre 计入表。关键是预置 mp[0]=1，否则漏掉从下标 0 开始的子数组；先查后存避免 k=0 时把自己算进去。",
+  "hints": [
+    "题型是「前缀和 + 哈希计数」：子数组和为 k ⇔ 两个前缀和之差为 k，把区间和问题变成一次遍历的查表问题（元素有负数，滑动窗口不可用）。",
+    "用 unordered_map&lt;int,int&gt; 存「前缀和的值 → 出现次数」，并预置 mp[0] = 1 兜住从头开始的子数组。",
+    "遍历时先 pre += x，再 count += mp[pre - k]（<strong>先查后存</strong>，k=0 时不会把自己算进去），最后 mp[pre]++。"
+  ]
+}

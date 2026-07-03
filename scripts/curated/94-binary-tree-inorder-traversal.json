@@ -1,0 +1,12 @@
+{
+  "id": 94,
+  "slug": "binary-tree-inorder-traversal",
+  "method": "方法一：递归",
+  "solutionCode": "class Solution {\npublic:\n    void inorder(TreeNode* root, vector<int>& res) {\n        if (!root) {\n            return;\n        }\n        inorder(root->left, res);\n        res.push_back(root->val);\n        inorder(root->right, res);\n    }\n    vector<int> inorderTraversal(TreeNode* root) {\n        vector<int> res;\n        inorder(root, res);\n        return res;\n    }\n};",
+  "solutionText": "递归照抄定义：中序 = 左子树、根、右子树。辅助函数 inorder(root,res)，空节点直接返回，否则递归左、push 根值、递归右。三种遍历只差 push 的位置；中序遍历二叉搜索树会得到升序序列，这一性质要记牢。",
+  "hints": [
+    "题型是「二叉树遍历」：中序的定义本身就是算法——左子树、根、右子树，用递归照抄定义即可。",
+    "写一个带引用参数的辅助函数 <code>void inorder(TreeNode* root, vector&lt;int&gt;&amp; res)</code>，边遍历边收集，避免每层拷贝数组。",
+    "出口：root 为空直接 return；否则依次 inorder(root-&gt;left, res)、res.push_back(root-&gt;val)、inorder(root-&gt;right, res)——push 位置在中间就是「中」序。"
+  ]
+}

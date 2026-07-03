@@ -1,0 +1,12 @@
+{
+  "id": 15,
+  "slug": "3sum",
+  "method": "方法一：排序 + 双指针",
+  "solutionCode": "class Solution {\npublic:\n    vector<vector<int>> threeSum(vector<int>& nums) {\n        int n = nums.size();\n        sort(nums.begin(), nums.end());\n        vector<vector<int>> ans;\n        // 枚举 a\n        for (int first = 0; first < n; ++first) {\n            // 需要和上一次枚举的数不相同\n            if (first > 0 && nums[first] == nums[first - 1]) {\n                continue;\n            }\n            // c 对应的指针初始指向数组的最右端\n            int third = n - 1;\n            int target = -nums[first];\n            // 枚举 b\n            for (int second = first + 1; second < n; ++second) {\n                // 需要和上一次枚举的数不相同\n                if (second > first + 1 && nums[second] == nums[second - 1]) {\n                    continue;\n                }\n                // 需要保证 b 的指针在 c 的指针的左侧\n                while (second < third && nums[second] + nums[third] > target) {\n                    --third;\n                }\n                // 如果指针重合，随着 b 后续的增加\n                // 就不会有满足 a+b+c=0 并且 b<c 的 c 了，可以退出循环\n                if (second == third) {\n                    break;\n                }\n                if (nums[second] + nums[third] == target) {\n                    ans.push_back({nums[first], nums[second], nums[third]});\n                }\n            }\n        }\n        return ans;\n    }\n};",
+  "solutionText": "先排序，外层枚举 a；内层枚举 b 的同时让 c 的指针 third 从右端单调左移——排序后 b 增大则满足 b+c=-a 的 c 必减小，故 third 全程不回退，双指针相遇即 break，整体 O(n²)。去重全靠排序：三个位置都跳过与上一次枚举相同的值，保证不输出重复三元组。",
+  "hints": [
+    "题型是「排序 + 双指针」：排序后固定一个数，剩下两个数在有序区间上单调移动找和为 0，避免 O(n³)。",
+    "关键不变量：固定 first 后，second 增大时可行的 third 只会向左走，所以 third 指针全程<strong>单调不回退</strong>，两层合起来是 O(n)。",
+    "每一层枚举遇到与上一次相同的值就 continue 去重；内层 while (second &lt; third && nums[second] + nums[third] &gt; -nums[first]) 就 --third，相遇 break，相等则收入答案。"
+  ]
+}

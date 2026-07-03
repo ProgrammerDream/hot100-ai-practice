@@ -1,0 +1,12 @@
+{
+  "id": 394,
+  "slug": "decode-string",
+  "method": "方法一：栈操作",
+  "solutionCode": "class Solution {\npublic:\n    string getDigits(string &s, size_t &ptr) {\n        string ret = \"\";\n        while (isdigit(s[ptr])) {\n            ret.push_back(s[ptr++]);\n        }\n        return ret;\n    }\n\n    string getString(vector <string> &v) {\n        string ret;\n        for (const auto &s: v) {\n            ret += s;\n        }\n        return ret;\n    }\n\n    string decodeString(string s) {\n        vector <string> stk;\n        size_t ptr = 0;\n\n        while (ptr < s.size()) {\n            char cur = s[ptr];\n            if (isdigit(cur)) {\n                // 获取一个数字并进栈\n                string digits = getDigits(s, ptr);\n                stk.push_back(digits);\n            } else if (isalpha(cur) || cur == '[') {\n                // 获取一个字母并进栈\n                stk.push_back(string(1, s[ptr++]));\n            } else {\n                ++ptr;\n                vector <string> sub;\n                while (stk.back() != \"[\") {\n                    sub.push_back(stk.back());\n                    stk.pop_back();\n                }\n                reverse(sub.begin(), sub.end());\n                // 左括号出栈\n                stk.pop_back();\n                // 此时栈顶为当前 sub 对应的字符串应该出现的次数\n                int repTime = stoi(stk.back());\n                stk.pop_back();\n                string t, o = getString(sub);\n                // 构造字符串\n                while (repTime--) t += o;\n                // 将构造好的字符串入栈\n                stk.push_back(t);\n            }\n        }\n\n        return getString(stk);\n    }\n};",
+  "solutionText": "用栈维护 token：数字整体解析入栈，字母和 '[' 直接入栈；遇 ']' 不断出栈直到 '['，出栈序列反转拼成子串，再弹出 '[' 和栈顶数字，把子串重复对应次数后重新压栈，最后从栈底到栈顶拼接即答案。易错点：数字可能多位，要连续读完。",
+  "hints": [
+    "题型是「括号嵌套展开」：最内层括号要最先展开，这种后进先出的处理顺序天然适合用<strong>栈</strong>。",
+    "用 vector&lt;string&gt; 当栈，数字（可能多位，整体解析成一个串）、字母、'[' 都作为独立 token 入栈；栈里存的是「还没配对完成的片段」，方便最后从栈底到栈顶拼接。",
+    "扫到 ']' 时：不断出栈直到 '['，把出栈序列<strong>反转</strong>后拼成子串；弹掉 '[' 后栈顶必是重复次数，用 stoi 取出，把子串重复该次数再压回栈。"
+  ]
+}

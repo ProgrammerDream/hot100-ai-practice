@@ -1,0 +1,12 @@
+{
+  "id": 114,
+  "slug": "flatten-binary-tree-to-linked-list",
+  "method": "方法一：前序遍历",
+  "solutionCode": "class Solution {\npublic:\n    void flatten(TreeNode* root) {\n        vector<TreeNode*> l;\n        preorderTraversal(root, l);\n        int n = l.size();\n        for (int i = 1; i < n; i++) { // 按前序顺序把相邻节点重连成右斜单链\n            TreeNode *prev = l.at(i - 1), *curr = l.at(i);\n            prev->left = nullptr;\n            prev->right = curr;\n        }\n    }\n\n    void preorderTraversal(TreeNode* root, vector<TreeNode*> &l) {\n        if (root != NULL) {\n            l.push_back(root);\n            preorderTraversal(root->left, l);\n            preorderTraversal(root->right, l);\n        }\n    }\n};",
+  "solutionText": "两步走：先做一次前序遍历，把所有节点按访问顺序存进数组；再顺序重连——对相邻的 prev 与 curr，把 prev 的 left 置空、right 指向 curr。遍历与改指针分离，避免了边遍历边改导致右子树引用丢失的问题，代价是 O(n) 额外空间。",
+  "hints": [
+    "题型是「二叉树原地改造」：展开后的节点顺序正好是<strong>前序遍历</strong>的顺序，先确定顺序再考虑怎么接指针。",
+    "边遍历边改指针容易把还没访问的右子树弄丢，最稳的做法是把<strong>遍历</strong>和<strong>重连</strong>拆成两步。",
+    "第一步前序遍历把节点依次收进 vector&lt;TreeNode*&gt;；第二步从 i=1 开始，令 l[i-1]-&gt;left = nullptr、l[i-1]-&gt;right = l[i]，串成一条只有右孩子的链。"
+  ]
+}

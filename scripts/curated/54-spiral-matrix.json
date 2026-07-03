@@ -1,0 +1,12 @@
+{
+  "id": 54,
+  "slug": "spiral-matrix",
+  "method": "方法二：按层模拟",
+  "solutionCode": "class Solution {\npublic:\n    vector<int> spiralOrder(vector<vector<int>>& matrix) {\n        if (matrix.size() == 0 || matrix[0].size() == 0) {\n            return {};\n        }\n\n        int rows = matrix.size(), columns = matrix[0].size();\n        vector<int> order;\n        int left = 0, right = columns - 1, top = 0, bottom = rows - 1;\n        while (left <= right && top <= bottom) {\n            for (int column = left; column <= right; column++) {\n                order.push_back(matrix[top][column]);\n            }\n            for (int row = top + 1; row <= bottom; row++) {\n                order.push_back(matrix[row][right]);\n            }\n            if (left < right && top < bottom) { // 该层至少两行两列才走下边和左边，防单行/单列重复\n                for (int column = right - 1; column > left; column--) {\n                    order.push_back(matrix[bottom][column]);\n                }\n                for (int row = bottom; row > top; row--) {\n                    order.push_back(matrix[row][left]);\n                }\n            }\n            left++;\n            right--;\n            top++;\n            bottom--;\n        }\n        return order;\n    }\n};",
+  "solutionText": "维护 left、right、top、bottom 四个边界，从外到内逐层遍历：每层按上行→右列→下行→左列收集，走完把四边界各向内收缩一格。易错：下行和左列必须在 left<right 且 top<bottom 时才走，否则单行或单列的层会被重复遍历。",
+  "hints": [
+    "题型是「矩阵按层模拟」：把矩阵看成一圈套一圈的洋葱，从最外层开始一圈一圈往里剥。",
+    "用四个边界变量 left、right、top、bottom 表示当前层，剥完一层四个变量各向内收缩 1，循环条件是 left &lt;= right && top &lt;= bottom。",
+    "每层按顺序收集：上边 (top 行, left→right)、右边 (right 列, top+1→bottom)、下边 (bottom 行, right-1→left+1 反向)、左边 (left 列, bottom→top+1 反向)；后两条边要加 left &lt; right && top &lt; bottom 判断，防止单行 / 单列重复收集。"
+  ]
+}

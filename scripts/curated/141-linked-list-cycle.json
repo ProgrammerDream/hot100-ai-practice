@@ -1,0 +1,12 @@
+{
+  "id": 141,
+  "slug": "linked-list-cycle",
+  "method": "方法二：快慢指针",
+  "solutionCode": "class Solution {\npublic:\n    bool hasCycle(ListNode* head) {\n        if (head == nullptr || head->next == nullptr) {\n            return false;\n        }\n        ListNode* slow = head;\n        ListNode* fast = head->next;\n        while (slow != fast) {\n            if (fast == nullptr || fast->next == nullptr) {\n                return false;\n            }\n            slow = slow->next;\n            fast = fast->next->next; // 快指针每次两步，有环时相对慢指针每步逼近 1，必相遇\n        }\n        return true;\n    }\n};",
+  "solutionText": "Floyd 判圈：慢指针每次走一步，快指针每次走两步。若有环，快指针在环内以相对速度 1 逼近慢指针，必定相遇；若无环，快指针先走到 nullptr。本写法让 fast 从 head->next 出发、用 slow != fast 作循环条件，所以进入循环前要先把空链表和单节点情形直接返回 false。",
+  "hints": [
+    "题型是「链表判环」：不用额外空间，让两个速度不同的指针赛跑，有环它们终会相遇。",
+    "slow 每次走 1 步、fast 走 2 步；有环时 fast 相对 slow 每步靠近 1，一定追上；无环则 fast 先碰到 nullptr。",
+    "本解法 fast 从 head-&gt;next 出发，循环条件 while (slow != fast)，循环内先判 fast 或 fast-&gt;next 为空就返回 false；进循环前先排除空链表和单节点，直接返回 false。"
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "id": 74,
+  "slug": "search-a-2d-matrix",
+  "method": "方法二：一次二分查找",
+  "solutionCode": "class Solution {\npublic:\n    bool searchMatrix(vector<vector<int>>& matrix, int target) {\n        int m = matrix.size(), n = matrix[0].size();\n        int low = 0, high = m * n - 1;\n        while (low <= high) {\n            int mid = (high - low) / 2 + low;\n            int x = matrix[mid / n][mid % n]; // 一维下标映射回二维：除/模的都是列数 n\n            if (x < target) {\n                low = mid + 1;\n            } else if (x > target) {\n                high = mid - 1;\n            } else {\n                return true;\n            }\n        }\n        return false;\n    }\n};",
+  "solutionText": "把矩阵视作按行拼接后的有序一维数组，在 [0, m*n-1] 上做一次标准二分：一维 mid 映射回二维 matrix[mid/n][mid%n] 再与 target 比较。易错点：除和取模用的都是列数 n，写成行数 m 会错位。",
+  "hints": [
+    "题型是「二分查找」：每行升序、且下一行开头比上一行结尾大，整个矩阵按行展平后就是一个严格升序的一维数组。",
+    "不必真的展平：在下标区间 [0, m*n-1] 上二分，一维下标 mid 映射回二维元素 matrix[mid / n][mid % n]，其中 n 是<strong>列数</strong>。",
+    "标准闭区间写法：x &lt; target 则 low = mid + 1；x &gt; target 则 high = mid - 1；相等直接返回 true，循环结束返回 false。"
+  ]
+}

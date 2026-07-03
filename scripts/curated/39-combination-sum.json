@@ -1,0 +1,12 @@
+{
+  "id": 39,
+  "slug": "combination-sum",
+  "method": "方法一：搜索回溯",
+  "solutionCode": "class Solution {\npublic:\n    void dfs(vector<int>& candidates, int target, vector<vector<int>>& ans, vector<int>& combine, int idx) {\n        if (idx == candidates.size()) {\n            return;\n        }\n        if (target == 0) {\n            ans.emplace_back(combine);\n            return;\n        }\n        // 直接跳过\n        dfs(candidates, target, ans, combine, idx + 1);\n        // 选择当前数\n        if (target - candidates[idx] >= 0) {\n            combine.emplace_back(candidates[idx]);\n            dfs(candidates, target - candidates[idx], ans, combine, idx);\n            combine.pop_back();\n        }\n    }\n\n    vector<vector<int>> combinationSum(vector<int>& candidates, int target) {\n        vector<vector<int>> ans;\n        vector<int> combine;\n        dfs(candidates, target, ans, combine, 0);\n        return ans;\n    }\n};",
+  "solutionText": "对每个候选数做「跳过 / 选用」两分支回溯：dfs(idx, target) 中 target 减到 0 就收录当前组合，idx 越界则返回。跳过分支递归 idx+1；选用分支把该数压入后递归时 idx 不变（同一个数可重复选），返回后 pop_back 撤销。idx 只进不退保证组合不重复。",
+  "hints": [
+    "题型是「组合型回溯（可重复选取）」：在候选数里凑出目标和，同一个数可以使用无限次。",
+    "递归状态是 (idx, 剩余 target)：每个数两条分支——跳过它，或选它；关键是选它之后 <strong>idx 不变</strong>，才能重复选同一个数。",
+    "dfs：target==0 时收录组合并返回，idx 越界返回；先递归 dfs(idx+1) 表示跳过，再在 target-candidates[idx]&gt;=0 时 push → dfs(idx, target-candidates[idx]) → pop 撤销。"
+  ]
+}

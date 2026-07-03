@@ -1,0 +1,12 @@
+{
+  "id": 207,
+  "slug": "course-schedule",
+  "method": "方法二：广度优先搜索",
+  "solutionCode": "class Solution {\nprivate:\n    vector<vector<int>> edges;\n    vector<int> indeg;\n\npublic:\n    bool canFinish(int numCourses, vector<vector<int>>& prerequisites) {\n        edges.resize(numCourses);\n        indeg.resize(numCourses);\n        for (const auto& info: prerequisites) {\n            edges[info[1]].push_back(info[0]); // 先修课指向后续课\n            ++indeg[info[0]];\n        }\n\n        queue<int> q;\n        for (int i = 0; i < numCourses; ++i) {\n            if (indeg[i] == 0) {\n                q.push(i);\n            }\n        }\n\n        int visited = 0;\n        while (!q.empty()) {\n            ++visited;\n            int u = q.front();\n            q.pop();\n            for (int v: edges[u]) {\n                --indeg[v];\n                if (indeg[v] == 0) {\n                    q.push(v);\n                }\n            }\n        }\n\n        return visited == numCourses; // 全部课都能出队 ⇔ 图中无环\n    }\n};",
+  "solutionText": "BFS 拓扑排序：把课程看成有向图，先修课指向后续课，统计每门课的入度。先把入度为 0 的课全部入队，每出队一门课 visited 加一，并把它指向的课入度减一，减到 0 就入队。最终 visited 等于课程总数说明无环、能修完；否则图中有环返回 false。",
+  "hints": [
+    "题型是「有向图判环 / 拓扑排序」：能修完所有课，等价于先修关系构成的有向图没有环。",
+    "建邻接表 edges（先修课 → 后续课）和入度数组 indeg；关键不变量：入度为 0 的课当前就可以修。",
+    "把所有入度为 0 的课入队；每出队一门课就 <code>++visited</code>，并把它的后继课入度减一、减到 0 就入队；最后判断 <code>visited == numCourses</code>。"
+  ]
+}

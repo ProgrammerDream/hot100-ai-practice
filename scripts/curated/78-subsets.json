@@ -1,0 +1,12 @@
+{
+  "id": 78,
+  "slug": "subsets",
+  "method": "方法二：递归法实现子集枚举",
+  "solutionCode": "class Solution {\npublic:\n    vector<int> t;\n    vector<vector<int>> ans;\n\n    void dfs(int cur, vector<int>& nums) {\n        if (cur == nums.size()) {\n            ans.push_back(t);\n            return;\n        }\n        t.push_back(nums[cur]); // 选择当前元素\n        dfs(cur + 1, nums);\n        t.pop_back(); // 撤销选择\n        dfs(cur + 1, nums); // 不选当前元素\n    }\n\n    vector<vector<int>> subsets(vector<int>& nums) {\n        dfs(0, nums);\n        return ans;\n    }\n};",
+  "solutionText": "对每个元素做「选 / 不选」二叉决策：dfs(cur) 处理第 cur 个数，先把 nums[cur] 压入路径 t 再递归（选），弹出后再递归一次（不选），cur 到达末尾时把当前 t 存入答案，n 个元素共产生 2^n 个子集。易错点：两条分支之间必须 pop_back 撤销，否则路径被污染。",
+  "hints": [
+    "题型是「子集型回溯」：每个元素独立地面临「选或不选」两种选择，所有递归叶子恰好构成 2^n 个子集。",
+    "维护一条路径数组 t 表示当前已选的元素；递归参数只需一个下标 cur，表示正在决策第几个元素。",
+    "dfs(cur)：cur==n 时把 t 存入答案；否则 <code>t.push_back(nums[cur])</code> → dfs(cur+1)（选）→ <code>t.pop_back()</code> → dfs(cur+1)（不选）。"
+  ]
+}
