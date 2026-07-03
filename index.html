@@ -376,11 +376,19 @@ async function callLLM(cfg, messages, opts) {
       signal: opts.signal
     });
   }
+  const text = await resp.text().catch(() => '');
+  // 网关(new-api/one-api 等)对不存在的 API 路径常返回自家 HTML 页面：
+  // 典型原因是 baseURL 少了 /v1 后缀，给出可行动的提示而不是裸 JSON 解析错误
+  if (/^\s*</.test(text)) {
+    throw new Error('接口返回的是 HTML 网页而不是 JSON（HTTP ' + resp.status + '）。baseURL 很可能少了 /v1 后缀（如 https://xxx 应填 https://xxx/v1），请到「设置」里检查。');
+  }
   if (!resp.ok) {
-    const text = await resp.text().catch(() => '');
     throw new Error('HTTP ' + resp.status + ' ' + text.slice(0, 200));
   }
-  const data = await resp.json();
+  let data;
+  try { data = JSON.parse(text); } catch (e) {
+    throw new Error('接口返回非 JSON 内容：' + text.slice(0, 120));
+  }
   return (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || '';
 }
 
