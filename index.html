@@ -65,6 +65,7 @@
   .issue:hover { background: #333; }
   .issue .sev { flex: none; font-weight: 700; }
   .issue .sev.error { color: var(--red); } .issue .sev.warning { color: var(--orange); }
+  .issue .hint-pre { margin: 4px 0 0; padding: 6px 8px; background: #2a2a2a; border-radius: 4px; white-space: pre-wrap; word-break: break-all; font-family: Consolas, 'Courier New', monospace; font-size: 12px; line-height: 1.5; }
   .watch-ok { color: var(--green); padding: 8px 0; }
   .watch-off { color: var(--red); padding: 8px 0; font-weight: 600; }
   .watch-summary { color: var(--text2); padding: 4px 0 8px; }
@@ -493,8 +494,8 @@ const WATCH_SYSTEM = [
   '唯一正确性基准是给出的参考题解。规则：',
   '1. 只判断用户代码是否沿着参考题解的思路在写；变量名不同不算偏离，其他的都算偏离。',
   '2. 禁止建议参考题解之外的任何其他解法。',
-  '3. 用户在正轨上（on_track=true，issues 为空）。',
-  '4. 思路偏向题解之外的写法立刻指出，severity 用 "warning"；hint 字段直接输出该行应该怎么写的代码，不要写文字说明。',
+  '3. 代码才写了开头几行、还看不出方向时不要臆断偏离，按在正轨上处理（on_track=true，issues 为空）。',
+  '4. 思路偏向题解之外的写法立刻指出，severity 用 "warning"；hint 只给出出问题的那几行应有的写法（保留缩进、多行用换行分隔，最多 3 行代码），禁止输出完整函数或整份题解代码，不要写文字说明。',
   '只输出 JSON，不要输出任何其他文字。格式：',
   '{"on_track": true, "issues": [{"start_line": 1, "end_line": 1, "severity": "warning", "hint": "该行代码"}], "summary": "用中文说明应该怎么写"}',
   '行号对应用户代码的行号前缀。没有问题时 issues 给空数组。'
@@ -584,7 +585,7 @@ function renderMarkers(issues) {
     const end = Math.min(maxLine, Math.max(start, it.end_line || start));
     return {
       severity: it.severity === 'error' ? monaco.MarkerSeverity.Error : monaco.MarkerSeverity.Warning,
-      message: it.hint || '',
+      message: clipHint(it.hint || ''),
       startLineNumber: start, startColumn: 1,
       endLineNumber: end, endColumn: 1000
     };
@@ -609,6 +610,20 @@ function esc(s) {
   return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
+// hint 兜底截断：模型不听话把整份代码倒进 hint 时，只留前 6 行保证面板可读
+function clipHint(hint) {
+  const lines = String(hint == null ? '' : hint).split('\n');
+  if (lines.length <= 6) { return lines.join('\n'); }
+  return lines.slice(0, 6).join('\n') + '\n…（其余 ' + (lines.length - 6) + ' 行已截断）';
+}
+
+// 含换行的 hint 视为代码片段，用保留换行缩进的代码块渲染；单行仍内联显示
+function hintHtml(hint) {
+  const h = clipHint(hint);
+  if (h.includes('\n')) { return '<pre class="hint-pre">' + esc(h) + '</pre>'; }
+  return esc(h);
+}
+
 function renderWatchTab() {
   if (curTab !== 'watch') { return; }
   const body = document.getElementById('fbBody');
@@ -624,7 +639,7 @@ function renderWatchTab() {
   (r.issues || []).forEach(it => {
     html += '<div class="issue" data-line="' + (it.start_line || 1) + '">'
       + '<span class="sev ' + (it.severity === 'error' ? 'error' : 'warning') + '">' + (it.severity === 'error' ? '✘' : '⚠') + '</span>'
-      + '<span>第 ' + esc(it.start_line) + ' 行：' + esc(it.hint) + '</span></div>';
+      + '<span>第 ' + esc(it.start_line) + ' 行：' + hintHtml(it.hint) + '</span></div>';
   });
   body.innerHTML = html;
   // 点问题条目跳转到对应行

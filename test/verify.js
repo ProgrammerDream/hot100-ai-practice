@@ -96,8 +96,8 @@ async function setupMockRoute(page) {
       if (userContent.includes('ALWAYS_GARBAGE') || (userContent.includes('RETRY_ME') && body.response_format)) {
         content = '\nNo<< workNo is is no no partNo</tool_call>2222>>02</';
       } else if (userContent.includes('FORLOOP_BAD')) {
-        // 模拟"思路偏了"，且故意用代码围栏包 JSON，验证兜底解析
-        content = '```json\n{"on_track": false, "issues": [{"start_line": 1, "end_line": 1, "severity": "warning", "hint": "题解用哈希表，你在写别的，回到板子上"}], "summary": "思路偏离题解"}\n```';
+        // 模拟"思路偏了"，hint 为多行代码片段（验证代码块渲染），且故意用代码围栏包 JSON 验证兜底解析
+        content = '```json\n{"on_track": false, "issues": [{"start_line": 1, "end_line": 1, "severity": "warning", "hint": "题解用哈希表，你在写别的，回到板子上\\nunordered_map<int, int> idx;\\nfor (int i = 0; i < nums.size(); i++) {"}], "summary": "思路偏离题解"}\n```';
       } else {
         content = '{"on_track": true, "issues": [], "summary": "在正轨上"}';
       }
@@ -222,6 +222,7 @@ const PERSIST_WAIT = 700;
   check('B7 偏题时打出波浪线 marker(含围栏 JSON 兜底)', markerCount > 0, 'markers=' + markerCount);
   const fbText = await page.textContent('#fbBody');
   check('B8 反馈区显示偏题提示', fbText.includes('思路偏了') || fbText.includes('回到板子'));
+  check('B8b 多行 hint 用保留换行的代码块渲染', await page.locator('#fbBody .issue pre.hint-pre').count() > 0);
 
   // B9/B10 提交通过：Accepted + 进度落 JSON 文件
   await page.click('.monaco-editor');
@@ -289,7 +290,13 @@ const PERSIST_WAIT = 700;
     const a = formatCpp('class Solution {\npublic:\nint f() {\nif (x) {\nreturn 1;\n}\nreturn 0;\n}\n};').split('\n');
     const b = formatCpp('int f() {\nstring s = "}{";\nreturn 1; // }\n}').split('\n');
     const weird = 'int f(){\n      return 1;\n   }';
-    return { a: a, b: b, keepCount: formatCpp(weird).split('\n').length === 3 };
+    const clipped = clipHint(Array.from({ length: 12 }, (_, i) => 'line' + i).join('\n'));
+    return {
+      a: a, b: b,
+      keepCount: formatCpp(weird).split('\n').length === 3,
+      clipLines: clipped.split('\n').length,
+      clipMark: clipped.includes('已截断')
+    };
   });
   check('C1 缩进按大括号深度重排(含访问修饰符退级)',
     fmt.a[1] === 'public:' && fmt.a[2] === '    int f() {' && fmt.a[4] === '            return 1;' && fmt.a[8] === '};',
@@ -298,6 +305,7 @@ const PERSIST_WAIT = 700;
     fmt.b[1] === '    string s = "}{";' && fmt.b[2] === '    return 1; // }' && fmt.b[3] === '}',
     JSON.stringify(fmt.b));
   check('C3 格式化不改变行数(行号映射不破坏)', fmt.keepCount);
+  check('C3b 超长 hint 截断为 6 行+截断标记', fmt.clipLines === 7 && fmt.clipMark, 'lines=' + fmt.clipLines);
 
   // C4 集成：乱缩进代码触发盯写后，请求里的用户代码已格式化且行号前缀保留
   await page.evaluate(() => monaco.editor.getModels()[0].setValue('int f(){\nreturn 1;\n}'));
